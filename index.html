@@ -58,10 +58,10 @@
 
 <div id="match" style="display:none;">
 
-  <!-- SCORE -->
+  <!-- ✅ SCORE -->
   <div id="score" style="font-weight:bold; float:right;"></div>
 
-  <!-- ✅ HALF + TIMER -->
+  <!-- ✅ TIMER + HALF -->
   <h2 id="timer">1st Half – 00:00</h2>
 
   <button onclick="startTimer()">Start</button>
@@ -81,7 +81,8 @@
     <div class="line" style="top:25%;"></div>
 
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M5,0 Q50,80 95,0" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M5,0 Q50,80 95,0"
+            stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
@@ -142,10 +143,9 @@ let oppScore = {g:0,p:0,two:0};
 
 let stats = {shots:0,wides:0,koWon:0,koLost:0};
 let playerStats = {};
-
 let lastEvent = null;
 
-/* ✅ TIMER + HALF */
+/* TIMER + HALF */
 let time = 0;
 let running = false;
 let interval;
@@ -203,7 +203,8 @@ function startMatch(){
 /* SELECT PLAYER */
 function selectPlayer(n){
   selected = n;
-  selectedDisplay.innerText = "#"+n+" - "+lineup[n];
+  document.getElementById("selected").innerText =
+    "#"+n+" - "+lineup[n];
 }
 
 /* HOME */
@@ -275,16 +276,15 @@ function updateSummary(){
     "<b>Top Scorers:</b><br>"+list;
 }
 
-/* SCORE */
+/* ✅ FIXED SCORE FUNCTION */
 function updateScore(){
-  score.textContent =
-    home.value+": "+score.g+"-"+(score.p+score.two*2)
-    +" | "+
-    away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
+  document.getElementById("score").textContent =
+    home.value + ": " + score.g + "-" + (score.p + score.two*2)
+    + " | " +
+    away.value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
 </script>
 
 </body>
 </html>
-``
