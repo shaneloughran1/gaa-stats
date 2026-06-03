@@ -49,8 +49,11 @@
 <input id="home" placeholder="Home Team"><br><br>
 <input id="away" placeholder="Opponent"><br><br>
 
-<h3>Players</h3>
+<h3>Starting 15</h3>
 <div id="players"></div>
+
+<h3>Substitutes</h3>
+<div id="subs"></div>
 
 <button onclick="startMatch()">Start Match</button>
 
@@ -68,6 +71,7 @@
 
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
+  <button onclick="startSub()">SUB</button>
   <h4 id="selected"></h4>
 
   <div id="pitch" onclick="logShot(event)">
@@ -78,8 +82,7 @@
     <div class="line" style="top:25%;"></div>
 
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M5,0 Q50,80 95,0"
-            stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M5,0 Q50,80 95,0" stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
@@ -116,8 +119,6 @@
     <button onclick="quick('Foul Conceded')">Foul</button>
   </div>
 
-  <button onclick="undo()">Undo</button>
-
   <h3>Match Summary</h3>
   <div id="summary"></div>
 
@@ -127,19 +128,17 @@
 
 <script>
 
+// DATA
 let lineup = {};
 let selected = "";
 
-// SCORES
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// STATS
 let stats = {shots:0,wides:0,koWon:0,koLost:0};
 let stats1 = {shots:0,wides:0,koWon:0,koLost:0};
 let stats2 = {shots:0,wides:0,koWon:0,koLost:0};
 
-// ✅ PLAYER STATS
 let playerStats = {};
 
 let half="1st Half";
@@ -147,18 +146,38 @@ let time=0;
 let running=false;
 let interval;
 
-function currentHalfStats(){
-  return half==="1st Half"?stats1:stats2;
+// ✅ SUB SYSTEM
+let subMode = false;
+let subOff = null;
+
+// SETUP PLAYERS
+for(let i=1;i<=15;i++){
+  players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
 }
 
-/* TIMER */
+for(let i=16;i<=30;i++){
+  subs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+}
+
+function buildButtons(){
+  playerButtons.innerHTML = Object.keys(lineup).map(n=>{
+    let starter = n <= 15;
+    return `<button onclick="selectPlayer(${n})" ${!starter ? 'disabled style="background:#eee;"' : ''}>${n}</button>`;
+  }).join("");
+}
+
+function startMatch(){
+  match.style.display="block";
+  buildButtons();
+  updateScore();
+  updateSummary();
+}
+
+// TIMER
 function startTimer(){
   if(running)return;
   running=true;
-  interval=setInterval(()=>{
-    time++;
-    updateTimerDisplay();
-  },1000);
+  interval=setInterval(()=>{ time++; updateTimer(); },1000);
 }
 
 function pauseTimer(){
@@ -169,131 +188,122 @@ function pauseTimer(){
 function toggleHalf(){
   half="2nd Half";
   time=0;
-  updateTimerDisplay();
+  updateTimer();
 }
 
-function updateTimerDisplay(){
+function updateTimer(){
   let m=Math.floor(time/60).toString().padStart(2,"0");
   let s=(time%60).toString().padStart(2,"0");
   timer.innerText=half+" – "+m+":"+s;
 }
 
-function getTimeStamp(){
+function getTime(){
   let m=Math.floor(time/60).toString().padStart(2,"0");
   let s=(time%60).toString().padStart(2,"0");
   return half+" "+m+":"+s;
 }
 
-/* PLAYERS */
-for(let i=1;i<=15;i++){
-  players.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
-}
-
-function startMatch(){
-  match.style.display="block";
-
-  playerButtons.innerHTML=Object.keys(lineup).map(n=>
-    `<button onclick="selectPlayer(${n})">${n}</button>`
-  ).join("");
-
-  updateScore();
-  updateSummary();
+// ✅ SUB FLOW
+function startSub(){
+  subMode=true;
+  subOff=null;
+  last.innerText="🔁 Select player OFF";
 }
 
 function selectPlayer(n){
+
+  if(subMode){
+
+    if(!subOff){
+      subOff=n;
+      last.innerText="🔁 Select player ON";
+      return;
+    }
+
+    let subOn=n;
+
+    let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+    let onBtn=document.querySelector(`button[onclick="selectPlayer(${subOn})"]`);
+
+    if(offBtn){ offBtn.disabled=true; offBtn.style.background="#ccc"; }
+    if(onBtn){ onBtn.disabled=false; onBtn.style.background=""; }
+
+    last.innerText=`🔁 ${getTime()} – #${subOff} OFF → #${subOn} ON`;
+
+    subMode=false;
+    return;
+  }
+
   selected=n;
   selectedDisplay.innerText="#"+n+" - "+lineup[n];
 }
 
-/* HOME */
+// HOME SCORE
 function add(type){
   if(!selected)return;
 
-  if(!playerStats[selected]){
-    playerStats[selected]={g:0,p:0,two:0};
-  }
+  if(!playerStats[selected]) playerStats[selected]={g:0,p:0,two:0};
 
-  let h=currentHalfStats();
+  let h = half==="1st Half"?stats1:stats2;
 
-  if(type==="Goal"){
-    score.g++; stats.shots++; h.shots++;
-    playerStats[selected].g++;
-  }
+  if(type==="Goal"){score.g++;stats.shots++;h.shots++;playerStats[selected].g++;}
+  if(type==="2pt"){score.two++;stats.shots++;h.shots++;playerStats[selected].two++;}
+  if(type==="Point"){score.p++;stats.shots++;h.shots++;playerStats[selected].p++;}
 
-  if(type==="2pt"){
-    score.two++; stats.shots++; h.shots++;
-    playerStats[selected].two++;
-  }
-
-  if(type==="Point"){
-    score.p++; stats.shots++; h.shots++;
-    playerStats[selected].p++;
-  }
-
-  last.innerText=`✅ ${getTimeStamp()} – ${lineup[selected]} - ${type}`;
-  updateScore(); updateSummary();
+  last.innerText=`✅ ${getTime()} – ${lineup[selected]} - ${type}`;
+  updateScore();updateSummary();
 }
 
-/* KICKOUT */
-function kickout(type){
-  let h=currentHalfStats();
-
-  if(type==="won"){stats.koWon++;h.koWon++;}
-  if(type==="lost"){stats.koLost++;h.koLost++;}
-
-  last.innerText=`⚪ ${getTimeStamp()} – KO ${type}`;
+function kickout(t){
+  let h = half==="1st Half"?stats1:stats2;
+  if(t==="won"){stats.koWon++;h.koWon++;}
+  if(t==="lost"){stats.koLost++;h.koLost++;}
+  last.innerText=`⚪ ${getTime()} – KO ${t}`;
   updateSummary();
 }
 
-/* WIDE */
 function wide(){
-  let h=currentHalfStats();
-  stats.wides++; h.wides++;
-
-  last.innerText=`⚪ ${getTimeStamp()} – Wide`;
+  let h = half==="1st Half"?stats1:stats2;
+  stats.wides++;h.wides++;
+  last.innerText=`⚪ ${getTime()} – Wide`;
   updateSummary();
 }
 
-/* OPP */
-function opp(type){
-  if(type==="Goal") oppScore.g++;
-  if(type==="2pt") oppScore.two++;
-  if(type==="Point") oppScore.p++;
+function quick(t){
+  last.innerText=`⚡ ${getTime()} – ${t}`;
+}
 
-  last.innerText=`🔴 ${getTimeStamp()} – Opp ${type}`;
+function opp(type){
+  if(type==="Goal")oppScore.g++;
+  if(type==="2pt")oppScore.two++;
+  if(type==="Point")oppScore.p++;
+  last.innerText=`🔴 ${getTime()} – Opp ${type}`;
   updateScore();
 }
 
-/* ✅ SUMMARY (FIXED 2PT DISPLAY) */
-function updateSummary(){
+function updateScore(){
+  score.innerText =
+    home.value+": "+score.g+"-"+(score.p+score.two*2)
+    +" | "+
+    away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
+}
 
+// SUMMARY (unchanged logic)
+function updateSummary(){
   let totalKO=stats.koWon+stats.koLost;
   let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
 
   let scorers = Object.entries(playerStats).map(([num,s])=>{
     let total = s.g*3 + s.p + s.two*2;
-
-    return {
-      name: lineup[num],
-      g: s.g,
-      p: s.p,
-      two: s.two,
-      total
-    };
+    return {name:lineup[num],g:s.g,p:s.p,two:s.two,total};
   });
 
   scorers.sort((a,b)=>b.total-a.total);
 
-  let scorerList = scorers.map(p => {
-
-    let scoreLine = `${p.g}-${p.p}`;
-    
-    if(p.two > 0){
-      scoreLine += ` (${p.two}x2pt)`;
-    }
-
-    return `${p.name} – ${scoreLine} (${p.total})`;
-
+  let list=scorers.map(p=>{
+    let line=`${p.g}-${p.p}`;
+    if(p.two>0) line+=` (${p.two}x2pt)`;
+    return `${p.name} – ${line} (${p.total})`;
   }).join("<br>");
 
   summary.innerHTML=
@@ -304,27 +314,7 @@ function updateSummary(){
     "KO Lost: "+stats.koLost+"<br>"+
     "KO %: "+koPerc+"%<br><br>"+
 
-    "<b>1st Half</b><br>"+
-    "Shots: "+stats1.shots+"<br>"+
-    "Wides: "+stats1.wides+"<br>"+
-    "KO Won: "+stats1.koWon+"<br>"+
-    "KO Lost: "+stats1.koLost+"<br><br>"+
-
-    "<b>2nd Half</b><br>"+
-    "Shots: "+stats2.shots+"<br>"+
-    "Wides: "+stats2.wides+"<br>"+
-    "KO Won: "+stats2.koWon+"<br>"+
-    "KO Lost: "+stats2.koLost+"<br><br>"+
-
-    "<b>Top Scorers</b><br>"+scorerList;
-}
-
-/* SCORE */
-function updateScore(){
-  document.getElementById("score").textContent=
-    home.value+": "+score.g+"-"+(score.p+score.two*2)
-    +" | "+
-    away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
+    "<b>Top Scorers</b><br>"+list;
 }
 
 </script>
