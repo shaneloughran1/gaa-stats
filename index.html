@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GAA Stats App</title>
-  <style>
-    body { font-family: Arial; padding: 10px; }
-    button, select, input { margin: 5px; padding: 10px; }
-    .pitch { height: 200px; background: green; color: white; text-align: center; padding-top: 80px; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAA Stats Elite</title>
+
+<style>
+body { font-family: Arial; padding: 10px; }
+button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
+</style>
+
 </head>
 
 <body>
@@ -15,42 +16,54 @@
 <h2 id="teams"></h2>
 
 <div id="setup">
-  <input id="home" placeholder="Home Team"><br>
-  <input id="away" placeholder="Opponent"><br>
+<input id="home" placeholder="Home Team"><br>
+<input id="away" placeholder="Opponent"><br>
 
-  <h3>Lineup</h3>
-  <div id="players"></div>
-
-  <button onclick="startMatch()">Start Match</button>
+<div id="players"></div>
+<button onclick="startMatch()">Start Match</button>
 </div>
 
 <div id="match" style="display:none">
 
-  <h3 id="score">0-0</h3>
+<h2 id="score">0-0</h2>
 
-  <select id="playerSelect"></select>
+<select id="playerSelect"></select>
 
-  <div class="pitch" onclick="addEvent('point')">
-    Tap for point
-  </div>
+<h3>Own Kickouts</h3>
+<button onclick="kickout('own','short','won')">Short Won</button>
+<button onclick="kickout('own','short','lost')">Short Lost</button>
 
-  <br>
+<button onclick="kickout('own','long','won')">Long Won</button>
+<button onclick="kickout('own','long','lost')">Long Lost</button>
 
-  <button onclick="addEvent('goal')">Goal</button>
-  <button onclick="addEvent('two')">2pt</button>
-  <button onclick="addEvent('turnover')">Turnover</button>
+<br>
 
-  <br><br>
+<h3>Opposition Kickouts</h3>
+<button onclick="kickout('opp','short','won')">Press Won</button>
+<button onclick="kickout('opp','short','lost')">Press Lost</button>
 
-  <button onclick="saveMatch()">Save Match</button>
+<button onclick="kickout('opp','long','won')">Long Won</button>
+<button onclick="kickout('opp','long','lost')">Long Lost</button>
+
+<br><br>
+
+<button onclick="showStats()">View Stats</button>
+
+</div>
+
+<div id="stats" style="display:none">
+
+<h3>Kickout Breakdown</h3>
+<pre id="output"></pre>
+
+<button onclick="back()">Back</button>
 
 </div>
 
 <script>
 
 let lineup = {};
-let events = [];
-let score = {g:0,p:0,two:0};
+let kickouts = [];
 
 const playersDiv = document.getElementById("players");
 
@@ -62,43 +75,59 @@ function startMatch(){
   const home = document.getElementById("home").value;
   const away = document.getElementById("away").value;
 
-  document.getElementById("teams").innerText = home + " vs " + away;
-
-  const select = document.getElementById("playerSelect");
-  select.innerHTML = "";
-
-  for(let i=1;i<=15;i++){
-    const name = document.getElementById("p"+i).value;
-    if(name){
-      lineup[i] = name;
-      select.innerHTML += `<option value="${i}">${i} - ${name}</option>`;
-    }
-  }
+  document.getElementById("teams").innerText = home+" vs "+away;
 
   document.getElementById("setup").style.display="none";
   document.getElementById("match").style.display="block";
 }
 
-function addEvent(type){
-  const jersey = document.getElementById("playerSelect").value;
-
-  if(type==="point") score.p++;
-  if(type==="goal") score.g++;
-  if(type==="two") score.two++;
-
-  document.getElementById("score").innerText =
-    score.g + "-" + (score.p + score.two*2);
-
-  events.push({player: lineup[jersey], type: type});
+function kickout(team,type,result){
+  kickouts.push({team,type,result});
 }
 
-function saveMatch(){
-  alert("Match saved ✅");
-  location.reload();
+function showStats(){
+
+  document.getElementById("match").style.display="none";
+  document.getElementById("stats").style.display="block";
+
+  let own = kickouts.filter(k=>k.team==='own');
+  let opp = kickouts.filter(k=>k.team==='opp');
+
+  let ownWon = own.filter(k=>k.result==='won').length;
+  let oppWon = opp.filter(k=>k.result==='won').length;
+
+  let ownPct = own.length ? (ownWon/own.length*100).toFixed(1):0;
+  let oppPct = opp.length ? (oppWon/opp.length*100).toFixed(1):0;
+
+  let insight = "";
+
+  if(ownPct > 65 && oppPct < 40){
+    insight = "Dominating own kickouts, weak press";
+  } else if(ownPct < 50){
+    insight = "Struggling on own kickouts";
+  } else if(oppPct > 50){
+    insight = "Strong kickout press";
+  } else {
+    insight = "Balanced kickout battle";
+  }
+
+  document.getElementById("output").innerText =
+`Own Kickouts:
+${ownWon}/${own.length} (${ownPct}%)
+
+Opp Kickouts Won:
+${oppWon}/${opp.length} (${oppPct}%)
+
+Insight:
+${insight}`;
+}
+
+function back(){
+  document.getElementById("stats").style.display="none";
+  document.getElementById("match").style.display="block";
 }
 
 </script>
 
 </body>
 </html>
-``
