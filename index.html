@@ -27,19 +27,39 @@
 
 <h2>Match Setup</h2>
 
-<input id="home" placeholder="Home Team"><br><br>
-<input id="away" placeholder="Opponent"><br><br>
+<!-- ✅ NEW SIDE BY SIDE SETUP -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
 
-<h3>Starting 15</h3>
-<div id="players"></div>
+  <!-- HOME -->
+  <div>
+    <h3>Home</h3>
+    <input id="home" placeholder="Home Team"><br><br>
 
-<h3>Substitutes</h3>
-<div id="subs"></div>
+    <h4>Starting 15</h4>
+    <div id="players"></div>
 
-<h3>Opposition (optional)</h3>
-<div id="oppPlayers"></div>
+    <h4>Subs</h4>
+    <div id="subs"></div>
+  </div>
 
-<button onclick="startMatch()">Start Match</button>
+  <!-- OPP -->
+  <div>
+    <h3>Opponent</h3>
+    <input id="away" placeholder="Opponent"><br><br>
+
+    <h4>Starting 15</h4>
+    <div id="oppPlayers"></div>
+
+    <h4>Subs</h4>
+    <div id="oppSubs"></div>
+  </div>
+
+</div>
+
+<br>
+<button onclick="startMatch()" style="width:100%;padding:15px;font-size:18px;">
+Start Match
+</button>
 
 <hr>
 
@@ -102,37 +122,38 @@ let selectedOpp = "";
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-let stats = {shots:0,wides:0,koWon:0,koLost:0};
-let oppStats = {wides:0};
-
 let half="1st Half";
 let time=0;
 let running=false;
 let interval;
 
-/* SETUP */
+// ✅ SUB SYSTEM
+let subMode=false;
+let subOff=null;
+
+/* SETUP INPUTS */
 for(let i=1;i<=15;i++){
   players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+  oppPlayers.innerHTML += `<input placeholder="Opp #${i}" onchange="oppLineup[${i}] = this.value"><br>`;
 }
 
 for(let i=16;i<=30;i++){
   subs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+  oppSubs.innerHTML += `<input placeholder="Opp #${i}" onchange="oppLineup[${i}] = this.value"><br>`;
 }
 
-for(let i=1;i<=15;i++){
-  oppPlayers.innerHTML += `<input placeholder="Opp #${i}" onchange="oppLineup[${i}] = this.value"><br>`;
-}
-
-/* BUILD BUTTONS */
+/* BUTTON BUILD */
 function buildButtons(){
+
   playerButtons.innerHTML = Object.keys(lineup).map(n=>{
     let active = n <= 15;
-    return `<button onclick="selectPlayer(${n})" ${!active ? 'disabled' : ''}>${n}</button>`;
+    return `<button onclick="selectPlayer(${n})" ${!active?'disabled':''}>${n}</button>`;
   }).join("");
 
   oppButtons.innerHTML = Object.keys(oppLineup).map(n=>{
     return `<button onclick="selectOpp(${n})">${n}</button>`;
   }).join("");
+
 }
 
 function startMatch(){
@@ -171,46 +192,77 @@ function getTime(){
   return half+" "+m+":"+s;
 }
 
-/* PLAYER SELECT */
+/* SUB FLOW */
+function startSub(){
+  subMode=true;
+  subOff=null;
+  last.innerText="🔁 Select player OFF";
+}
+
 function selectPlayer(n){
+
+  if(subMode){
+
+    if(!subOff){
+      subOff=n;
+      last.innerText="🔁 Select player ON";
+      return;
+    }
+
+    if(subOff==n){
+      last.innerText="❌ Cannot sub same player";
+      return;
+    }
+
+    let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+    let onBtn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+
+    if(offBtn){ offBtn.disabled=true; offBtn.style.background="#ccc"; }
+    if(onBtn){ onBtn.disabled=false; }
+
+    last.innerText=`🔁 ${getTime()} – #${subOff} OFF → #${n} ON`;
+
+    subMode=false;
+    return;
+  }
+
+  let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+  if(btn && btn.disabled)return;
+
   selected=n;
-  let name=lineup[n]||"";
-  selectedDisplay.innerText = name? "#"+n+" - "+name : "#"+n;
+  let name=lineup[n];
+  selectedDisplay.innerText=name?`#${n} - ${name}`:`#${n}`;
 }
 
 /* OPP SELECT */
 function selectOpp(n){
   selectedOpp=n;
-
-  let name = oppLineup[n] || "";
-  last.innerText =
-    name ? `Opp Select: #${n} - ${name}` : `Opp Select: #${n}`;
 }
 
 /* HOME SCORE */
 function add(type){
-  if(!selected) return;
+  if(!selected)return;
 
-  let name = lineup[selected] || "#"+selected;
+  let name=lineup[selected]||("#"+selected);
 
-  if(type==="Goal") score.g++;
-  if(type==="2pt") score.two++;
-  if(type==="Point") score.p++;
+  if(type==="Goal")score.g++;
+  if(type==="2pt")score.two++;
+  if(type==="Point")score.p++;
 
-  last.innerText = `✅ ${getTime()} – ${name} - ${type}`;
+  last.innerText=`✅ ${getTime()} – ${name} - ${type}`;
   updateScore();
 }
 
 /* OPP SCORE */
 function oppScoreAdd(type){
 
-  let player = selectedOpp ? (oppLineup[selectedOpp] || "#"+selectedOpp) : "Team";
+  let player = selectedOpp ? (oppLineup[selectedOpp] || "#"+selectedOpp) : "Opp";
 
-  if(type==="Goal") oppScore.g++;
-  if(type==="2pt") oppScore.two++;
-  if(type==="Point") oppScore.p++;
+  if(type==="Goal")oppScore.g++;
+  if(type==="2pt")oppScore.two++;
+  if(type==="Point")oppScore.p++;
 
-  last.innerText = `🔴 ${getTime()} – ${player} - ${type}`;
+  last.innerText=`🔴 ${getTime()} – ${player} - ${type}`;
 
   selectedOpp="";
   updateScore();
@@ -219,29 +271,26 @@ function oppScoreAdd(type){
 /* OPP WIDE */
 function oppWide(){
 
-  let player = selectedOpp ? (oppLineup[selectedOpp] || "#"+selectedOpp) : "Team";
+  let player = selectedOpp ? (oppLineup[selectedOpp] || "#"+selectedOpp) : "Opp";
 
-  oppStats.wides++;
-
-  last.innerText = `🔴 ${getTime()} – ${player} - Wide`;
+  last.innerText=`🔴 ${getTime()} – ${player} - Wide`;
 
   selectedOpp="";
 }
 
 /* KICKOUT */
 function kickout(t){
-  last.innerText = `⚪ ${getTime()} – KO ${t}`;
+  last.innerText=`⚪ ${getTime()} – KO ${t}`;
 }
 
-/* SCORE DISPLAY */
+/* SCORE */
 function updateScore(){
-  document.getElementById("score").innerText =
+  score.innerText =
     home.value+": "+score.g+"-"+(score.p+score.two*2)
     +" | "+
     away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
 }
 
 </script>
-
 </body>
 </html>
