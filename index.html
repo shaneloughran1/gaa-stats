@@ -36,7 +36,7 @@
       background:red;
     }
 
-    button { margin: 3px; padding: 8px; }
+    button { margin: 4px; padding: 8px; }
   </style>
 
 </head>
@@ -69,7 +69,7 @@
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
 
-  <!-- ✅ CORRECTED PITCH -->
+  <!-- ✅ PITCH -->
   <div id="pitch" onclick="logShot(event)">
 
     <!-- END LINE -->
@@ -84,18 +84,24 @@
     <!-- 13m -->
     <div class="line" style="top:15%;"></div>
 
-    <!-- 21m -->
+    <!-- ✅ 21m (ARC TOUCHES THIS) -->
     <div class="line" style="top:25%;"></div>
 
-    <!-- ✅ FIXED ARC (WIDE + CENTERED + TOUCHES 21 ONLY) -->
-    <svg style="position:absolute;top:25%;left:0;width:100%;height:220px;">
-      <path d="M0,0 Q300,220 600,0"
+    <!-- ✅ ✅ CORRECT ARC (FINAL) -->
+    <svg style="
+      position:absolute;
+      top:25%;
+      left:0;
+      width:100%;
+      height:50%;
+    ">
+      <path d="M0,0 Q50,100 100,0"
             stroke="white"
             stroke-width="3"
             fill="none"/>
     </svg>
 
-    <!-- 45m -->
+    <!-- ✅ 45m (CLEAR GAP BELOW ARC) -->
     <div class="line" style="top:70%;"></div>
 
     <!-- 65m -->
@@ -134,7 +140,7 @@ let oppScore = {g:0,p:0,two:0};
 
 let lastEvent = null;
 
-// CREATE PLAYER INPUTS
+// PLAYERS
 const playersDiv = document.getElementById("players");
 
 for (let i=1;i<=15;i++){
@@ -162,7 +168,7 @@ function selectPlayer(n){
   selected = n;
 }
 
-// HOME EVENT
+// HOME
 function add(type){
   if(!selected) return;
 
@@ -178,7 +184,7 @@ function add(type){
   updateScore();
 }
 
-// OPP EVENT
+// OPP
 function opp(type){
   if(type==="goal") oppScore.g++;
   if(type==="two") oppScore.two++;
@@ -208,12 +214,12 @@ function undo(){
   updateScore();
 }
 
-// UPDATE SCORE
+// SCORE DISPLAY
 function updateScore(){
   document.getElementById("score").innerText =
     document.getElementById("home").value + ": " +
     score.g + "-" + (score.p + score.two*2)
-    + "   |   " +
+    + " | " +
     document.getElementById("away").value + ": " +
     oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
@@ -240,9 +246,7 @@ function pause(){
 function logShot(e){
   if(!selected) return;
 
-  const pitch = document.getElementById("pitch");
   const rect = pitch.getBoundingClientRect();
-
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
@@ -258,4 +262,3 @@ function logShot(e){
 
 </body>
 </html>
-``
