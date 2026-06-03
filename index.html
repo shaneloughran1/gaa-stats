@@ -18,13 +18,15 @@
 
     .line { position:absolute;width:100%;height:2px;background:white; }
     .box { position:absolute;border:2px solid white; }
+
     .dot {
       position:absolute;
-      width:8px;height:8px;border-radius:50%;
+      width:8px;height:8px;
+      border-radius:50%;
       background:red;
     }
 
-    button { margin: 4px; padding: 10px; }
+    button { margin:4px; padding:10px; }
 
     .grid3 {
       display:grid;
@@ -58,14 +60,13 @@
   <button onclick="start()">Start</button>
   <button onclick="pause()">Pause</button>
 
-  <!-- PLAYER SELECT -->
+  <!-- PLAYERS -->
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
   <h4 id="selected"></h4>
 
-  <!-- ✅ PITCH -->
+  <!-- ✅ PITCH (UNCHANGED WORKABLE VERSION) -->
   <div id="pitch" onclick="logShot(event)">
-
     <div class="line" style="top:0;"></div>
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
     <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
@@ -73,22 +74,17 @@
     <div class="line" style="top:15%;"></div>
     <div class="line" style="top:25%;"></div>
 
-    <!-- ✅ YOUR WORKABLE ARC -->
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;"
-         viewBox="0 0 100 100"
-         preserveAspectRatio="none">
+         viewBox="0 0 100 100" preserveAspectRatio="none">
       <path d="M5,0 Q50,80 95,0"
-            stroke="white"
-            stroke-width="1.5"
-            fill="none"/>
+            stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
     <div class="line" style="top:88%;"></div>
-
   </div>
 
-  <!-- HOME -->
+  <!-- ✅ HOME -->
   <h3>Home</h3>
   <div class="grid3">
     <button onclick="add('Goal')">Goal</button>
@@ -96,11 +92,16 @@
     <button onclick="add('Point')">1PT</button>
   </div>
 
-  <button onclick="undo()">Undo</button>
+  <!-- ✅ OPPOSITION -->
+  <h3>Opposition</h3>
+  <div class="grid3">
+    <button onclick="opp('Goal')">Goal</button>
+    <button onclick="opp('2pt')">2PT</button>
+    <button onclick="opp('Point')">1PT</button>
+  </div>
 
-  <!-- ✅ QUICK EVENTS PANEL -->
+  <!-- ✅ QUICK EVENTS (BOTTOM NOW) -->
   <h3>Quick Events</h3>
-
   <div class="grid3">
     <button onclick="quick('Won Ball')">Won Ball</button>
     <button onclick="quick('Lost Ball')">Lost Ball</button>
@@ -110,13 +111,11 @@
     <button onclick="quick('Miss')">Miss</button>
   </div>
 
-  <!-- OPP -->
-  <h3>Opposition</h3>
-  <div class="grid3">
-    <button onclick="opp('Goal')">Opp Goal</button>
-    <button onclick="opp('2pt')">Opp 2pt</button>
-    <button onclick="opp('Point')">Opp 1pt</button>
-  </div>
+  <button onclick="undo()">Undo</button>
+
+  <!-- ✅ MATCH SUMMARY -->
+  <h3>Match Summary</h3>
+  <div id="summary"></div>
 
   <h3 id="last" style="text-align:center;"></h3>
 
@@ -132,6 +131,8 @@ let timer;
 
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
+
+let stats = {shots:0, quick:0};
 
 let lastEvent = null;
 
@@ -152,138 +153,18 @@ function startMatch(){
     Object.keys(lineup).map(n =>
       `<button id="p${n}" onclick="selectPlayer(${n})">${n}</button>`
     ).join("");
+
+  updateScore();
+  updateSummary();
 }
 
 // PLAYER SELECT
 function selectPlayer(n){
 
   Object.keys(lineup).forEach(num => {
-    const btn = document.getElementById("p" + num);
-    if(btn) btn.style.background = "";
+    let btn = document.getElementById("p"+num);
+    if(btn) btn.style.background="";
   });
 
   selected = n;
 
-  const active = document.getElementById("p" + n);
-  if(active) active.style.background = "#ffd54f";
-
-  document.getElementById("selected").innerText =
-    "Selected: #" + n + " - " + lineup[n];
-}
-
-// HOME SCORING
-function add(type){
-  if(!selected) return;
-
-  if(type==="Goal") score.g++;
-  if(type==="2pt") score.two++;
-  if(type==="Point") score.p++;
-
-  lastEvent = {type, team:"home"};
-
-  document.getElementById("last").innerText =
-    "✅ " + lineup[selected] + " - " + type;
-
-  updateScore();
-}
-
-// QUICK EVENTS ✅ UPGRADED
-function quick(type){
-
-  let label;
-
-  if(selected && lineup[selected]){
-    label = lineup[selected] + " - " + type;
-  } else {
-    label = "Team - " + type;
-  }
-
-  document.getElementById("last").innerText =
-    "⚡ " + label;
-
-  lastEvent = {type, team:"quick"};
-}
-
-// OPP SCORING
-function opp(type){
-
-  if(type==="Goal") oppScore.g++;
-  if(type==="2pt") oppScore.two++;
-  if(type==="Point") oppScore.p++;
-
-  lastEvent = {type, team:"opp"};
-
-  document.getElementById("last").innerText =
-    "🔴 Opp - " + type;
-
-  updateScore();
-}
-
-// UNDO
-function undo(){
-  if(!lastEvent) return;
-
-  if(lastEvent.team==="home"){
-    if(lastEvent.type==="Goal") score.g--;
-    if(lastEvent.type==="2pt") score.two--;
-    if(lastEvent.type==="Point") score.p--;
-  }
-
-  if(lastEvent.team==="opp"){
-    if(lastEvent.type==="Goal") oppScore.g--;
-    if(lastEvent.type==="2pt") oppScore.two--;
-    if(lastEvent.type==="Point") oppScore.p--;
-  }
-
-  updateScore();
-}
-
-// SCORE
-function updateScore(){
-  document.getElementById("score").innerText =
-    document.getElementById("home").value + ": " +
-    score.g + "-" + (score.p + score.two*2)
-    + " | " +
-    document.getElementById("away").value + ": " +
-    oppScore.g + "-" + (oppScore.p + oppScore.two*2);
-}
-
-// TIMER
-function start(){
-  if(running) return;
-  running=true;
-
-  timer=setInterval(()=>{
-    time++;
-    const m=Math.floor(time/60).toString().padStart(2,"0");
-    const s=(time%60).toString().padStart(2,"0");
-    document.getElementById("timer").innerText=m+":"+s;
-  },1000);
-}
-
-function pause(){
-  running=false;
-  clearInterval(timer);
-}
-
-// SHOT DOTS
-function logShot(e){
-  if(!selected) return;
-
-  const rect = pitch.getBoundingClientRect();
-
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const dot = document.createElement("div");
-  dot.className = "dot";
-  dot.style.left = x + "px";
-  dot.style.top = y + "px";
-
-  pitch.appendChild(dot);
-}
-
-</script>
-
-</body>
-</html>
