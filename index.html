@@ -168,3 +168,140 @@ function selectPlayer(n){
 
   selected = n;
 
+  let btn = document.getElementById("p"+n);
+  if(btn) btn.style.background="#ffd54f";
+
+  document.getElementById("selected").innerText =
+    "Selected: #" + n + " - " + lineup[n];
+}
+
+// HOME
+function add(type){
+  if(!selected) return;
+
+  if(type==="Goal"){ score.g++; stats.shots++; }
+  if(type==="2pt"){ score.two++; stats.shots++; }
+  if(type==="Point"){ score.p++; stats.shots++; }
+
+  lastEvent = {type,team:"home"};
+
+  document.getElementById("last").innerText =
+    "✅ " + lineup[selected] + " - " + type;
+
+  updateScore();
+  updateSummary();
+}
+
+// OPP
+function opp(type){
+  if(type==="Goal") oppScore.g++;
+  if(type==="2pt") oppScore.two++;
+  if(type==="Point") oppScore.p++;
+
+  lastEvent = {type,team:"opp"};
+
+  document.getElementById("last").innerText =
+    "🔴 Opp - " + type;
+
+  updateScore();
+  updateSummary();
+}
+
+// QUICK
+function quick(type){
+
+  stats.quick++;
+
+  let label = selected && lineup[selected]
+    ? lineup[selected] + " - " + type
+    : "Team - " + type;
+
+  document.getElementById("last").innerText =
+    "⚡ " + label;
+
+  lastEvent = {type,team:"quick"};
+
+  updateSummary();
+}
+
+// UNDO
+function undo(){
+  if(!lastEvent) return;
+
+  if(lastEvent.team==="home"){
+    if(lastEvent.type==="Goal"){ score.g--; stats.shots--; }
+    if(lastEvent.type==="2pt"){ score.two--; stats.shots--; }
+    if(lastEvent.type==="Point"){ score.p--; stats.shots--; }
+  }
+
+  if(lastEvent.team==="opp"){
+    if(lastEvent.type==="Goal") oppScore.g--;
+    if(lastEvent.type==="2pt") oppScore.two--;
+    if(lastEvent.type==="Point") oppScore.p--;
+  }
+
+  if(lastEvent.team==="quick"){
+    stats.quick--;
+  }
+
+  updateScore();
+  updateSummary();
+}
+
+// SCORE
+function updateScore(){
+  document.getElementById("score").innerText =
+    home.value + ": " + score.g + "-" + (score.p + score.two*2)
+    + " | " +
+    away.value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+}
+
+// ✅ SUMMARY PANEL
+function updateSummary(){
+  document.getElementById("summary").innerHTML =
+    "Shots: " + stats.shots + "<br>" +
+    "Goals: " + score.g + "<br>" +
+    "Points: " + score.p + "<br>" +
+    "2 Pointers: " + score.two + "<br>" +
+    "Quick Events: " + stats.quick;
+}
+
+// TIMER
+function start(){
+  if(running) return;
+  running=true;
+
+  timer=setInterval(()=>{
+    time++;
+    let m=Math.floor(time/60).toString().padStart(2,"0");
+    let s=(time%60).toString().padStart(2,"0");
+    timer.innerText;
+    document.getElementById("timer").innerText=m+":"+s;
+  },1000);
+}
+
+function pause(){
+  running=false;
+  clearInterval(timer);
+}
+
+// SHOT DOTS
+function logShot(e){
+  if(!selected) return;
+
+  let rect = pitch.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  let y = e.clientY - rect.top;
+
+  let dot = document.createElement("div");
+  dot.className="dot";
+  dot.style.left=x+"px";
+  dot.style.top=y+"px";
+
+  pitch.appendChild(dot);
+}
+
+</script>
+
+</body>
+</html>
