@@ -30,27 +30,13 @@ button { margin: 5px; padding: 10px; }
 .pitch::before { left:0; }
 .pitch::after { right:0; }
 
-/* END LINE (TOP) */
+/* END LINE */
 .end-line {
   position:absolute;
   top:0;
   width:100%;
   height:2px;
   background:white;
-}
-
-/* 13m + 21m + 45m + 65m */
-.line13 { top:18%; }
-.line21 { top:28%; }
-.line45 { top:55%; }
-.line65 { top:75%; }
-
-.line13, .line21, .line45, .line65 {
-  position:absolute;
-  width:100%;
-  height:2px;
-  background:white;
-  opacity:0.9;
 }
 
 /* SMALL BOX */
@@ -63,40 +49,76 @@ button { margin: 5px; padding: 10px; }
   border:2px solid white;
 }
 
-/* LARGE RECTANGLE (to 13m) */
+/* LARGE BOX (13m zone) */
 .large-box {
   position:absolute;
   top:0;
   left:25%;
   width:50%;
-  height:18%;
+  height:16%;
   border:2px solid white;
 }
 
-/* ✅ 21m ARC (INNER) */
+/* ✅ 13m LINE */
+.line13 {
+  position:absolute;
+  top:16%;
+  width:100%;
+  height:2px;
+  background:white;
+}
+
+/* ✅ 21m LINE */
+.line21 {
+  position:absolute;
+  top:24%;
+  width:100%;
+  height:2px;
+  background:white;
+}
+
+/* ✅ 21m ARC */
 .arc21 {
   position:absolute;
-  top:28%;
+  top:24%;
   left:50%;
-  width:35%;
-  height:80px;
+  width:38%;
+  height:70px;
   border:2px solid white;
   border-top:none;
   border-radius:0 0 50% 50% / 0 0 100% 100%;
   transform:translateX(-50%);
 }
 
-/* ✅ 2 POINT ARC (OUTER + WIDER) */
+/* ✅ 2PT ARC */
 .arc2pt {
   position:absolute;
-  top:28%;
+  top:24%;
   left:50%;
   width:75%;
-  height:140px;
+  height:110px;
   border:2px solid white;
   border-top:none;
   border-radius:0 0 50% 50% / 0 0 100% 100%;
   transform:translateX(-50%);
+}
+
+/* ✅ FIXED 45m LINE (CLOSE TO ARC) */
+.line45 {
+  position:absolute;
+  top:43%;
+  width:100%;
+  height:2px;
+  background:white;
+}
+
+/* ✅ 65m LINE */
+.line65 {
+  position:absolute;
+  top:65%;
+  width:100%;
+  height:2px;
+  background:white;
 }
 
 /* dots */
@@ -127,7 +149,6 @@ button { margin: 5px; padding: 10px; }
   <div class="line13"></div>
   <div class="line21"></div>
 
-  <!-- ✅ CORRECT ARCS -->
   <div class="arc21"></div>
   <div class="arc2pt"></div>
 
@@ -159,7 +180,6 @@ button { margin: 5px; padding: 10px; }
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// pitch click tracking
 document.getElementById("pitch").onclick = function(e){
 
   const rect = e.target.getBoundingClientRect();
@@ -183,7 +203,6 @@ document.getElementById("pitch").onclick = function(e){
   }
 };
 
-// scoring functions
 function addScore(type){
   if(type==="point") score.p++;
   if(type==="goal") score.g++;
@@ -212,4 +231,3 @@ function updateOpp(){
 
 </body>
 </html>
-``
