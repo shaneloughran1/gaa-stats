@@ -6,17 +6,17 @@
 
 <style>
 body { font-family: Arial; padding: 10px; }
-button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
+button { margin: 5px; padding: 10px; }
 
 /* PITCH */
 .pitch {
-  height: 300px;
+  height: 320px;
   position: relative;
   background: #2e7d32;
   border: 2px solid white;
 }
 
-/* halfway */
+/* Halfway */
 .pitch::before {
   content:"";
   position:absolute;
@@ -35,6 +35,7 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   height:2px;
   background:rgba(255,255,255,0.7);
 }
+
 .line45b {
   position:absolute;
   top:75%;
@@ -43,76 +44,50 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   background:rgba(255,255,255,0.7);
 }
 
-/* LARGE RECTANGLE */
+/* GOAL AREA BOXES */
 .large-box {
   position:absolute;
-  left:22%;
-  width:56%;
-  height:18%;
+  width:50%;
+  left:25%;
+  height:20%;
   border:2px solid white;
 }
 .large-top { top:0; }
 .large-bottom { bottom:0; }
 
-/* SMALL RECTANGLE */
 .small-box {
   position:absolute;
-  left:35%;
   width:30%;
-  height:9%;
+  left:35%;
+  height:10%;
   border:2px solid white;
 }
 .small-top { top:0; }
 .small-bottom { bottom:0; }
 
-/* ✅ CORRECT 40m ARCS (LEFT + RIGHT LIKE REAL PITCH) */
-
-/* TOP LEFT ARC */
-.arc-top-left {
+/* ✅ CORRECT 40m ARC (single wide arc like real pitch) */
+.arc-top {
   position:absolute;
-  top:18%;
-  left:5%;
-  width:70px;
-  height:100px;
+  top:22%;
+  left:50%;
+  width:70%;
+  height:120px;
   border:2px solid white;
-  border-right:none;
-  border-radius:100px 0 0 100px;
+  border-bottom:none;
+  border-radius:50% / 100%;
+  transform:translateX(-50%);
 }
 
-/* TOP RIGHT ARC */
-.arc-top-right {
+.arc-bottom {
   position:absolute;
-  top:18%;
-  right:5%;
-  width:70px;
-  height:100px;
+  bottom:22%;
+  left:50%;
+  width:70%;
+  height:120px;
   border:2px solid white;
-  border-left:none;
-  border-radius:0 100px 100px 0;
-}
-
-/* BOTTOM LEFT ARC */
-.arc-bottom-left {
-  position:absolute;
-  bottom:18%;
-  left:5%;
-  width:70px;
-  height:100px;
-  border:2px solid white;
-  border-right:none;
-  border-radius:100px 0 0 100px;
-}
-
-/* BOTTOM RIGHT ARC */
-.arc-bottom-right {
-  position:absolute;
-  bottom:18%;
-  right:5%;
-  width:70px;
-  height:100px;
-  border:2px solid white;
-  border-left:none;
-  border-radius:0 100px 100px 0;
+  border-top:none;
+  border-radius:50% / 100%;
+  transform:translateX(-50%);
 }
 
 /* dots */
@@ -124,38 +99,27 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 }
 .own { background:red; }
 .opp { background:yellow; }
+
 </style>
 </head>
 
 <body>
-
-<h2 id="teams"></h2>
-
-<div id="setup">
-<input id="home" placeholder="Home Team"><br>
-<input id="away" placeholder="Opponent"><br>
-<button onclick="startMatch()">Start Match</button>
-</div>
-
-<div id="match" style="display:none">
 
 <h2 id="score">0-0</h2>
 <h3 id="oppScore">Opp: 0-0</h3>
 
 <div class="pitch" id="pitch">
 
-  <!-- boxes -->
+  <!-- Boxes -->
   <div class="large-box large-top"></div>
   <div class="large-box large-bottom"></div>
 
   <div class="small-box small-top"></div>
   <div class="small-box small-bottom"></div>
 
-  <!-- ✅ CORRECT ARCS -->
-  <div class="arc-top-left"></div>
-  <div class="arc-top-right"></div>
-  <div class="arc-bottom-left"></div>
-  <div class="arc-bottom-right"></div>
+  <!-- ✅ Correct arcs -->
+  <div class="arc-top"></div>
+  <div class="arc-bottom"></div>
 
   <div class="line45b"></div>
 
@@ -183,8 +147,6 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 
 <button onclick="showStats()">View Stats</button>
 
-</div>
-
 <div id="stats" style="display:none">
 <pre id="output"></pre>
 <button onclick="back()">Back</button>
@@ -194,11 +156,6 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
-
-function startMatch(){
-  document.getElementById("setup").style.display="none";
-  document.getElementById("match").style.display="block";
-}
 
 document.getElementById("pitch").onclick = function(e){
 
@@ -223,6 +180,7 @@ document.getElementById("pitch").onclick = function(e){
   }
 };
 
+// scoring
 function addScore(type){
   if(type==="point") score.p++;
   if(type==="goal") score.g++;
@@ -237,6 +195,7 @@ function addOppScore(type){
   updateOpp();
 }
 
+// display
 function updateScore(){
   document.getElementById("score").innerText =
     score.g + "-" + (score.p + score.two*2);
@@ -248,9 +207,7 @@ function updateOpp(){
 }
 
 function showStats(){
-  document.getElementById("match").style.display="none";
   document.getElementById("stats").style.display="block";
-
   document.getElementById("output").innerText =
 `Own: ${score.g}-${score.p + score.two*2}
 Opp: ${oppScore.g}-${oppScore.p + oppScore.two*2}`;
@@ -258,7 +215,6 @@ Opp: ${oppScore.g}-${oppScore.p + oppScore.two*2}`;
 
 function back(){
   document.getElementById("stats").style.display="none";
-  document.getElementById("match").style.display="block";
 }
 
 </script>
