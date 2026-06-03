@@ -6,7 +6,6 @@
 
   <style>
     body { font-family: Arial; padding: 10px; }
-
     #pitch {
       width: 100%;
       height: 420px;
@@ -27,12 +26,6 @@
     }
 
     button { margin:4px; padding:10px; }
-
-    .grid2 {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
 
     .grid3 {
       display:grid;
@@ -68,11 +61,11 @@
   <div id="playerButtons"></div>
   <h4 id="selected"></h4>
 
+  <!-- ✅ PITCH -->
   <div id="pitch" onclick="logShot(event)">
     <div class="line" style="top:0;"></div>
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
     <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
-
     <div class="line" style="top:15%;"></div>
     <div class="line" style="top:25%;"></div>
 
@@ -86,6 +79,7 @@
     <div class="line" style="top:88%;"></div>
   </div>
 
+  <!-- HOME -->
   <h3>Home</h3>
   <div class="grid3">
     <button onclick="add('Goal')">Goal</button>
@@ -93,12 +87,7 @@
     <button onclick="add('Point')">1PT</button>
   </div>
 
-  <h3>Kickouts</h3>
-  <div class="grid2">
-    <button onclick="kickout('won')">KO Won</button>
-    <button onclick="kickout('lost')">KO Lost</button>
-  </div>
-
+  <!-- OPP -->
   <h3>Opposition</h3>
   <div class="grid3">
     <button onclick="opp('Goal')">Goal</button>
@@ -106,135 +95,151 @@
     <button onclick="opp('Point')">1PT</button>
   </div>
 
+  <!-- QUICK -->
   <h3>Quick Events</h3>
   <div class="grid3">
     <button onclick="quick('Won Ball')">Won Ball</button>
     <button onclick="quick('Lost Ball')">Lost Ball</button>
-    <button onclick="quick('Mark')">Mark</button>
     <button onclick="wide()">Wide</button>
+    <button onclick="quick('Mark')">Mark</button>
     <button onclick="quick('Foul Won')">Foul Won</button>
     <button onclick="quick('Foul Conceded')">Foul</button>
   </div>
 
   <button onclick="undo()">Undo</button>
 
+  <!-- ✅ SUMMARY -->
   <h3>Match Summary</h3>
   <div id="summary"></div>
 
-  <h3 id="last" style="text-align:center;"></h3>
+  <h3 id="last"></h3>
 
 </div>
 
 <script>
 
-let lineup={};
-let selected="";
-let time=0;
-let running=false;
-let timer;
+let lineup = {};
+let selected = "";
 
-let score={g:0,p:0,two:0};
-let oppScore={g:0,p:0,two:0};
+let score = {g:0,p:0,two:0};
+let oppScore = {g:0,p:0,two:0};
 
-let stats={shots:0,quick:0,koWon:0,koLost:0,wides:0};
+let stats = {shots:0, wides:0};
 
-let lastEvent=null;
+let playerStats = {}; // ✅ NEW
 
+let lastEvent = null;
+
+// PLAYERS
 for(let i=1;i<=15;i++){
-  players.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
+  players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
 }
 
 function startMatch(){
   match.style.display="block";
 
-  playerButtons.innerHTML=Object.keys(lineup).map(n=>
-    `<button onclick="selected=${n}">${n}</button>`
+  playerButtons.innerHTML = Object.keys(lineup).map(n =>
+    `<button onclick="selectPlayer(${n})">${n}</button>`
   ).join("");
 
   updateScore();
   updateSummary();
 }
 
+function selectPlayer(n){
+  selected = n;
+  selectedDisplay = document.getElementById("selected");
+  selectedDisplay.innerText = "#"+n+" - "+lineup[n];
+}
+
+// ✅ ADD SCORE + TRACK PLAYER
 function add(type){
-  if(!selected)return;
+  if(!selected) return;
 
-  if(type==="Goal"){score.g++;stats.shots++;}
-  if(type==="2pt"){score.two++;stats.shots++;}
-  if(type==="Point"){score.p++;stats.shots++;}
+  if(!playerStats[selected]){
+    playerStats[selected] = {g:0,p:0,two:0};
+  }
 
-  lastEvent={type,team:"home"};
-  last.innerText="✅ "+lineup[selected]+" - "+type;
+  if(type==="Goal"){
+    score.g++; stats.shots++;
+    playerStats[selected].g++;
+  }
 
-  updateScore();updateSummary();
+  if(type==="2pt"){
+    score.two++; stats.shots++;
+    playerStats[selected].two++;
+  }
+
+  if(type==="Point"){
+    score.p++; stats.shots++;
+    playerStats[selected].p++;
+  }
+
+  last.innerText = "✅ " + lineup[selected] + " - " + type;
+  lastEvent = {type, team:"home", player:selected};
+
+  updateScore();
+  updateSummary();
 }
 
 function wide(){
   stats.wides++;
-  last.innerText="⚪ Wide";
-  lastEvent={type:"wide",team:"wide"};
+  last.innerText = "⚪ Wide";
+  lastEvent = {type:"wide", team:"wide"};
   updateSummary();
 }
 
 function quick(type){
-  stats.quick++;
-  last.innerText="⚡ "+type;
-  lastEvent={type,team:"quick"};
-  updateSummary();
-}
-
-function kickout(t){
-  if(t==="won")stats.koWon++;
-  if(t==="lost")stats.koLost++;
-  last.innerText="⚪ KO "+t;
-  lastEvent={type:t,team:"ko"};
-  updateSummary();
+  last.innerText = "⚡ " + type;
+  lastEvent = {type, team:"quick"};
 }
 
 function opp(type){
-  if(type==="Goal")oppScore.g++;
-  if(type==="2pt")oppScore.two++;
-  if(type==="Point")oppScore.p++;
-  last.innerText="🔴 Opp - "+type;
-  lastEvent={type,team:"opp"};
-  updateScore();updateSummary();
+  if(type==="Goal") oppScore.g++;
+  if(type==="2pt") oppScore.two++;
+  if(type==="Point") oppScore.p++;
+
+  last.innerText = "🔴 Opp - " + type;
+
+  updateScore();
+  updateSummary();
 }
 
-function undo(){
-  if(!lastEvent)return;
+// ✅ SUMMARY WITH TOP SCORERS
+function updateSummary(){
 
-  if(lastEvent.team==="home"){
-    if(lastEvent.type==="Goal"){score.g--;stats.shots--;}
-    if(lastEvent.type==="2pt"){score.two--;stats.shots--;}
-    if(lastEvent.type==="Point"){score.p--;stats.shots--;}
-  }
+  let scorers = Object.entries(playerStats).map(([num, s])=>{
 
-  if(lastEvent.team==="wide"){
-    stats.wides--;
-  }
+    let total = s.p + (s.two*2) + (s.g*3);
 
-  updateScore();updateSummary();
+    return {
+      name: lineup[num],
+      g:s.g,
+      p:s.p,
+      two:s.two,
+      total
+    };
+
+  });
+
+  scorers.sort((a,b)=>b.total - a.total);
+
+  let scorerHtml = scorers.map(p =>
+    `${p.name} – ${p.g}-${p.p} (${p.total})`
+  ).join("<br>");
+
+  summary.innerHTML =
+    "Shots: "+stats.shots+"<br>"+
+    "Wides: "+stats.wides+"<br><br>"+
+    "<b>Top Scorers:</b><br>"+
+    scorerHtml;
 }
 
 function updateScore(){
-  scoreDiv=document.getElementById("score");
-  scoreDiv.textContent=
-    home.value+": "+score.g+"-"+(score.p+score.two*2)+
-    " | "+away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
-}
-
-function updateSummary(){
-  let totalKO=stats.koWon+stats.koLost;
-  let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
-
-  summary.innerHTML=
-    "Shots: "+stats.shots+"<br>"+
-    "Goals: "+score.g+"<br>"+
-    "Points: "+score.p+"<br>"+
-    "2PT: "+score.two+"<br>"+
-    "Wides: "+stats.wides+"<br><br>"+
-    "KO Won: "+stats.koWon+"<br>"+
-    "KO Lost: "+stats.koLost+"<br>"+
-    "KO %: "+koPerc+"%";
+  score.textContent =
+    home.value + ": " + score.g + "-" + (score.p + score.two*2)
+    + " | " +
+    away.value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
 </script>
