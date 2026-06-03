@@ -43,7 +43,7 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   background:rgba(255,255,255,0.7);
 }
 
-/* boxes */
+/* LARGE RECTANGLE */
 .large-box {
   position:absolute;
   left:22%;
@@ -54,6 +54,7 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 .large-top { top:0; }
 .large-bottom { bottom:0; }
 
+/* SMALL RECTANGLE */
 .small-box {
   position:absolute;
   left:35%;
@@ -64,214 +65,48 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 .small-top { top:0; }
 .small-bottom { bottom:0; }
 
-/* arc */
-.arc-top {
+/* ✅ CORRECT 40m ARCS (LEFT + RIGHT LIKE REAL PITCH) */
+
+/* TOP LEFT ARC */
+.arc-top-left {
   position:absolute;
   top:18%;
-  left:50%;
-  width:140px;
-  height:70px;
+  left:5%;
+  width:70px;
+  height:100px;
   border:2px solid white;
-  border-bottom:none;
-  border-radius:140px 140px 0 0;
-  transform:translateX(-50%);
+  border-right:none;
+  border-radius:100px 0 0 100px;
 }
-.arc-bottom {
+
+/* TOP RIGHT ARC */
+.arc-top-right {
+  position:absolute;
+  top:18%;
+  right:5%;
+  width:70px;
+  height:100px;
+  border:2px solid white;
+  border-left:none;
+  border-radius:0 100px 100px 0;
+}
+
+/* BOTTOM LEFT ARC */
+.arc-bottom-left {
   position:absolute;
   bottom:18%;
-  left:50%;
-  width:140px;
-  height:70px;
+  left:5%;
+  width:70px;
+  height:100px;
   border:2px solid white;
-  border-top:none;
-  border-radius:0 0 140px 140px;
-  transform:translateX(-50%);
+  border-right:none;
+  border-radius:100px 0 0 100px;
 }
 
-/* shot dots */
-.dot {
+/* BOTTOM RIGHT ARC */
+.arc-bottom-right {
   position:absolute;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-}
-.own { background:red; }
-.opp { background:yellow; }
-</style>
-</head>
-
-<body>
-
-<h2 id="teams"></h2>
-
-<div id="setup">
-<input id="home" placeholder="Home Team"><br>
-<input id="away" placeholder="Opponent"><br>
-
-<div id="players"></div>
-
-<button onclick="startMatch()">Start Match</button>
-</div>
-
-<div id="match" style="display:none">
-
-<h2 id="score">0-0</h2>
-<h3 id="oppScore">Opp: 0-0</h3>
-
-<select id="playerSelect">
-<option>Select Player</option>
-</select>
-
-<div class="pitch" id="pitch">
-  <div class="large-box large-top"></div>
-  <div class="large-box large-bottom"></div>
-  <div class="small-box small-top"></div>
-  <div class="small-box small-bottom"></div>
-  <div class="arc-top"></div>
-  <div class="arc-bottom"></div>
-  <div class="line45b"></div>
-</div>
-
-<br>
-
-<!-- ✅ OWN SCORING -->
-<h3>Own Score</h3>
-<button onclick="addScore('point')">1pt</button>
-<button onclick="addScore('goal')">Goal</button>
-<button onclick="addScore('two')">2pt</button>
-
-<!-- ✅ OPP SCORING -->
-<h3>Opposition Score</h3>
-<button onclick="addOppScore('point')">1pt</button>
-<button onclick="addOppScore('goal')">Goal</button>
-<button onclick="addOppScore('two')">2pt</button>
-
-<h3>Kickouts</h3>
-<button onclick="kickout('own','won')">Own Won</button>
-<button onclick="kickout('own','lost')">Own Lost</button>
-<button onclick="kickout('opp','won')">Press Won</button>
-<button onclick="kickout('opp','lost')">Press Lost</button>
-
-<br><br>
-
-<label>
-<input type="checkbox" id="oppToggle"> Track Opposition Shots on Pitch
-</label>
-
-<br><br>
-
-<button onclick="showStats()">View Stats</button>
-
-</div>
-
-<div id="stats" style="display:none">
-<pre id="output"></pre>
-<button onclick="back()">Back</button>
-</div>
-
-<script>
-
-let events = [];
-let kickouts = [];
-
-let score = {g:0,p:0,two:0};
-let oppScore = {g:0,p:0,two:0};
-
-// setup simple lineup (kept)
-const playersDiv = document.getElementById("players");
-playersDiv.innerHTML = `<input placeholder="Player names optional"><br>`;
-
-// start
-function startMatch(){
-  const home = document.getElementById("home").value;
-  const away = document.getElementById("away").value;
-  document.getElementById("teams").innerText = home + " vs " + away;
-
-  document.getElementById("setup").style.display="none";
-  document.getElementById("match").style.display="block";
-}
-
-// pitch tap
-document.getElementById("pitch").onclick = function(e){
-
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  let isOpp = document.getElementById("oppToggle").checked;
-
-  const dot = document.createElement("div");
-  dot.className = "dot " + (isOpp ? "opp" : "own");
-  dot.style.left = x+"px";
-  dot.style.top = y+"px";
-  e.target.appendChild(dot);
-
-  if(isOpp){
-    oppScore.p++;
-    updateOpp();
-  } else {
-    score.p++;
-    updateScore();
-  }
-};
-
-// ✅ OWN
-function addScore(type){
-  if(type==="point") score.p++;
-  if(type==="goal") score.g++;
-  if(type==="two") score.two++;
-  updateScore();
-}
-
-// ✅ OPP
-function addOppScore(type){
-  if(type==="point") oppScore.p++;
-  if(type==="goal") oppScore.g++;
-  if(type==="two") oppScore.two++;
-  updateOpp();
-}
-
-// display
-function updateScore(){
-  document.getElementById("score").innerText =
-    score.g + "-" + (score.p + score.two*2);
-}
-
-function updateOpp(){
-  document.getElementById("oppScore").innerText =
-    "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
-}
-
-function kickout(team,result){
-  kickouts.push({team,result});
-}
-
-// stats
-function showStats(){
-  document.getElementById("match").style.display="none";
-  document.getElementById("stats").style.display="block";
-
-  let ownKO = kickouts.filter(k=>k.team==="own");
-  let oppKO = kickouts.filter(k=>k.team==="opp");
-
-  let ownPct = ownKO.length ? (ownKO.filter(k=>k.result==="won").length/ownKO.length*100).toFixed(1):0;
-  let oppPct = oppKO.length ? (oppKO.filter(k=>k.result==="won").length/oppKO.length*100).toFixed(1):0;
-
-  document.getElementById("output").innerText = 
-`Own Score: ${score.g}-${score.p + score.two*2}
-Opp Score: ${oppScore.g}-${oppScore.p + oppScore.two*2}
-
-Kickouts:
-Own: ${ownPct}%
-Press: ${oppPct}%`;
-}
-
-function back(){
-  document.getElementById("stats").style.display="none";
-  document.getElementById("match").style.display="block";
-}
-
-</script>
-
-</body>
-</html>
+  bottom:18%;
+  right:5%;
+  width:70px;
+  height:100px;
