@@ -44,7 +44,6 @@
       border-radius:50%;
       background:red;
     }
-
   </style>
 </head>
 
@@ -94,15 +93,15 @@
 
   </div>
 
-  <!-- ✅ SCORING -->
-  <h3>Score</h3>
+  <!-- ✅ HOME SCORING -->
+  <h3>Home Score</h3>
   <div class="grid3">
     <button onclick="addScore('Goal')">Goal</button>
     <button onclick="addScore('2pt')">2PT</button>
     <button onclick="addScore('Point')">1PT</button>
   </div>
 
-  <!-- ✅ OPP SCORE -->
+  <!-- ✅ OPP SCORING -->
   <h3>Opponent Score</h3>
   <div class="grid3">
     <button onclick="oppScore('Goal')">Goal</button>
@@ -121,32 +120,33 @@
 
 <script>
 
+// DATA
 let lineup = {};
 let selected = "";
 
-// ✅ SCORES
+// SCORES
 let homeScore = {g:0, p:0, two:0};
 let awayScore = {g:0, p:0, two:0};
 
-// ✅ STATS
+// STATS
 let stats = {shots:0};
 
-// ✅ TIMER
+// TIMER
 let time = 0;
 let running = false;
 let timerInt;
 let half = "1st Half";
 
-/* ✅ PLAYERS */
+/* SETUP PLAYERS */
 for(let i=1;i<=15;i++){
   players.innerHTML +=
     `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
 }
 
-/* ✅ START MATCH */
+/* START MATCH */
 function startMatch(){
 
-  document.getElementById("match").style.display="block";
+  match.style.display="block";
 
   let btns="";
   for(let i=1;i<=15;i++){
@@ -159,15 +159,18 @@ function startMatch(){
   updateSummary();
 }
 
-/* ✅ TIMER */
+/* TIMER */
 function startTimer(){
   if(running) return;
+
   running=true;
 
   timerInt = setInterval(()=>{
     time++;
+
     let m = Math.floor(time/60).toString().padStart(2,"0");
     let s = (time%60).toString().padStart(2,"0");
+
     timer.innerText = half + " – " + m + ":" + s;
   },1000);
 }
@@ -182,12 +185,12 @@ function secondHalf(){
   time = 0;
 }
 
-/* ✅ SELECT PLAYER */
+/* PLAYER SELECT */
 function selectPlayer(n){
   selected = n;
 }
 
-/* ✅ HOME SCORING */
+/* HOME SCORE */
 function addScore(type){
 
   if(!selected) return;
@@ -206,7 +209,7 @@ function addScore(type){
   updateSummary();
 }
 
-/* ✅ OPP SCORING */
+/* OPP SCORE */
 function oppScore(type){
 
   if(type==="Goal") awayScore.g++;
@@ -218,25 +221,24 @@ function oppScore(type){
   updateScore();
 }
 
-/* ✅ SCORE DISPLAY */
+/* SCORE DISPLAY */
 function updateScore(){
 
-  document.getElementById("score").innerText =
-    document.getElementById("home").value + ": " +
+  score.innerText =
+    home.value + ": " +
     homeScore.g + "-" + (homeScore.p + homeScore.two*2)
     + " | " +
-    document.getElementById("away").value + ": " +
+    away.value + ": " +
     awayScore.g + "-" + (awayScore.p + awayScore.two*2);
 }
 
-/* ✅ SUMMARY */
+/* SUMMARY */
 function updateSummary(){
 
-  document.getElementById("summary").innerText =
-    "Shots: " + stats.shots;
+  summary.innerText = "Shots: " + stats.shots;
 }
 
-/* ✅ SHOT TRACKING */
+/* SHOT TRACKING */
 function logShot(e){
 
   if(!selected) return;
@@ -259,4 +261,3 @@ function logShot(e){
 
 </body>
 </html>
-``
