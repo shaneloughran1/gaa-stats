@@ -16,29 +16,22 @@
       margin-top: 10px;
     }
 
-    .line {
-      position:absolute;
-      width:100%;
-      height:2px;
-      background:white;
-    }
-
-    .box {
-      position:absolute;
-      border:2px solid white;
-    }
-
+    .line { position:absolute;width:100%;height:2px;background:white; }
+    .box { position:absolute;border:2px solid white; }
     .dot {
       position:absolute;
-      width:8px;
-      height:8px;
-      border-radius:50%;
+      width:8px;height:8px;border-radius:50%;
       background:red;
     }
 
-    button { margin: 4px; padding: 8px; }
-  </style>
+    button { margin: 4px; padding: 10px; }
 
+    .grid3 {
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+  </style>
 </head>
 
 <body>
@@ -57,41 +50,39 @@
 
 <div id="match" style="display:none;">
 
+  <!-- SCORE -->
   <div id="score" style="font-weight:bold; float:right;"></div>
 
+  <!-- TIMER -->
   <h2 id="timer">00:00</h2>
   <button onclick="start()">Start</button>
   <button onclick="pause()">Pause</button>
 
+  <!-- PLAYER SELECT -->
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
+  <h4 id="selected"></h4>
 
   <!-- ✅ PITCH -->
   <div id="pitch" onclick="logShot(event)">
 
-    <!-- END LINE -->
     <div class="line" style="top:0;"></div>
-
-    <!-- BOXES -->
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
     <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
 
-    <!-- LINES -->
     <div class="line" style="top:15%;"></div>
     <div class="line" style="top:25%;"></div>
 
-    <!-- ✅ ✅ WORKABLE ARC (FIXED PROPERLY) -->
+    <!-- ✅ YOUR WORKABLE ARC -->
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;"
          viewBox="0 0 100 100"
          preserveAspectRatio="none">
-
       <path d="M5,0 Q50,80 95,0"
             stroke="white"
-            stroke-width="1"
+            stroke-width="1.5"
             fill="none"/>
     </svg>
 
-    <!-- LOWER LINES -->
     <div class="line" style="top:70%;"></div>
     <div class="line" style="top:88%;"></div>
 
@@ -99,18 +90,35 @@
 
   <!-- HOME -->
   <h3>Home</h3>
-  <button onclick="add('goal')">Goal</button>
-  <button onclick="add('two')">2pt</button>
-  <button onclick="add('point')">1pt</button>
+  <div class="grid3">
+    <button onclick="add('Goal')">Goal</button>
+    <button onclick="add('2pt')">2PT</button>
+    <button onclick="add('Point')">1PT</button>
+  </div>
+
   <button onclick="undo()">Undo</button>
+
+  <!-- ✅ QUICK EVENTS PANEL -->
+  <h3>Quick Events</h3>
+
+  <div class="grid3">
+    <button onclick="quick('Won Ball')">Won Ball</button>
+    <button onclick="quick('Lost Ball')">Lost Ball</button>
+    <button onclick="quick('Kickout Won')">KO Won</button>
+    <button onclick="quick('Kickout Lost')">KO Lost</button>
+    <button onclick="quick('Mark')">Mark</button>
+    <button onclick="quick('Miss')">Miss</button>
+  </div>
 
   <!-- OPP -->
   <h3>Opposition</h3>
-  <button onclick="opp('goal')">Opp Goal</button>
-  <button onclick="opp('two')">Opp 2pt</button>
-  <button onclick="opp('point')">Opp 1pt</button>
+  <div class="grid3">
+    <button onclick="opp('Goal')">Opp Goal</button>
+    <button onclick="opp('2pt')">Opp 2pt</button>
+    <button onclick="opp('Point')">Opp 1pt</button>
+  </div>
 
-  <h4 id="last"></h4>
+  <h3 id="last" style="text-align:center;"></h3>
 
 </div>
 
@@ -127,6 +135,7 @@ let oppScore = {g:0,p:0,two:0};
 
 let lastEvent = null;
 
+// PLAYERS
 const playersDiv = document.getElementById("players");
 
 for (let i=1;i<=15;i++){
@@ -135,53 +144,101 @@ for (let i=1;i<=15;i++){
   `;
 }
 
+// START
 function startMatch(){
   document.getElementById("match").style.display = "block";
 
   document.getElementById("playerButtons").innerHTML =
     Object.keys(lineup).map(n =>
-      `<button onclick="selected=${n}">${n}</button>`
+      `<button id="p${n}" onclick="selectPlayer(${n})">${n}</button>`
     ).join("");
 }
 
+// PLAYER SELECT
+function selectPlayer(n){
+
+  Object.keys(lineup).forEach(num => {
+    const btn = document.getElementById("p" + num);
+    if(btn) btn.style.background = "";
+  });
+
+  selected = n;
+
+  const active = document.getElementById("p" + n);
+  if(active) active.style.background = "#ffd54f";
+
+  document.getElementById("selected").innerText =
+    "Selected: #" + n + " - " + lineup[n];
+}
+
+// HOME SCORING
 function add(type){
   if(!selected) return;
 
-  if(type==="goal") score.g++;
-  if(type==="two") score.two++;
-  if(type==="point") score.p++;
+  if(type==="Goal") score.g++;
+  if(type==="2pt") score.two++;
+  if(type==="Point") score.p++;
 
   lastEvent = {type, team:"home"};
 
+  document.getElementById("last").innerText =
+    "✅ " + lineup[selected] + " - " + type;
+
   updateScore();
 }
 
+// QUICK EVENTS ✅ UPGRADED
+function quick(type){
+
+  let label;
+
+  if(selected && lineup[selected]){
+    label = lineup[selected] + " - " + type;
+  } else {
+    label = "Team - " + type;
+  }
+
+  document.getElementById("last").innerText =
+    "⚡ " + label;
+
+  lastEvent = {type, team:"quick"};
+}
+
+// OPP SCORING
 function opp(type){
-  if(type==="goal") oppScore.g++;
-  if(type==="two") oppScore.two++;
-  if(type==="point") oppScore.p++;
+
+  if(type==="Goal") oppScore.g++;
+  if(type==="2pt") oppScore.two++;
+  if(type==="Point") oppScore.p++;
 
   lastEvent = {type, team:"opp"};
 
+  document.getElementById("last").innerText =
+    "🔴 Opp - " + type;
+
   updateScore();
 }
 
+// UNDO
 function undo(){
   if(!lastEvent) return;
 
   if(lastEvent.team==="home"){
-    if(lastEvent.type==="goal") score.g--;
-    if(lastEvent.type==="two") score.two--;
-    if(lastEvent.type==="point") score.p--;
-  } else {
-    if(lastEvent.type==="goal") oppScore.g--;
-    if(lastEvent.type==="two") oppScore.two--;
-    if(lastEvent.type==="point") oppScore.p--;
+    if(lastEvent.type==="Goal") score.g--;
+    if(lastEvent.type==="2pt") score.two--;
+    if(lastEvent.type==="Point") score.p--;
+  }
+
+  if(lastEvent.team==="opp"){
+    if(lastEvent.type==="Goal") oppScore.g--;
+    if(lastEvent.type==="2pt") oppScore.two--;
+    if(lastEvent.type==="Point") oppScore.p--;
   }
 
   updateScore();
 }
 
+// SCORE
 function updateScore(){
   document.getElementById("score").innerText =
     document.getElementById("home").value + ": " +
@@ -191,6 +248,7 @@ function updateScore(){
     oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
+// TIMER
 function start(){
   if(running) return;
   running=true;
@@ -208,10 +266,12 @@ function pause(){
   clearInterval(timer);
 }
 
+// SHOT DOTS
 function logShot(e){
   if(!selected) return;
 
   const rect = pitch.getBoundingClientRect();
+
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
