@@ -7,6 +7,8 @@
 <style>
 body { font-family: Arial; padding: 10px; }
 button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
+.pitch { height: 220px; background: green; position: relative; color:white; text-align:center; }
+.dot { position:absolute;width:8px;height:8px;background:red;border-radius:50%; }
 </style>
 
 </head>
@@ -29,32 +31,42 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 
 <select id="playerSelect"></select>
 
+<div class="pitch" id="pitch">Tap for point</div>
+
+<br>
+
+<button onclick="addScore('goal')">Goal</button>
+<button onclick="addScore('two')">2pt</button>
+
 <h3>Own Kickouts</h3>
 <button onclick="kickout('own','short','won')">Short Won</button>
 <button onclick="kickout('own','short','lost')">Short Lost</button>
-
 <button onclick="kickout('own','long','won')">Long Won</button>
 <button onclick="kickout('own','long','lost')">Long Lost</button>
-
-<br>
 
 <h3>Opposition Kickouts</h3>
 <button onclick="kickout('opp','short','won')">Press Won</button>
 <button onclick="kickout('opp','short','lost')">Press Lost</button>
-
 <button onclick="kickout('opp','long','won')">Long Won</button>
 <button onclick="kickout('opp','long','lost')">Long Lost</button>
 
 <br><br>
 
 <button onclick="showStats()">View Stats</button>
+<button onclick="saveMatch()">Save Match</button>
 
 </div>
 
 <div id="stats" style="display:none">
 
-<h3>Kickout Breakdown</h3>
-<pre id="output"></pre>
+<h3>Scoring</h3>
+<pre id="scoreStats"></pre>
+
+<h3>Kickouts</h3>
+<pre id="kickStats"></pre>
+
+<h3>Insights</h3>
+<pre id="insight"></pre>
 
 <button onclick="back()">Back</button>
 
@@ -63,71 +75,71 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 <script>
 
 let lineup = {};
+let events = [];
 let kickouts = [];
+
+let score = {g:0,p:0,two:0};
 
 const playersDiv = document.getElementById("players");
 
+// lineup inputs
 for(let i=1;i<=15;i++){
   playersDiv.innerHTML += `<input placeholder="#${i}" id="p${i}"><br>`;
 }
 
+// start match
 function startMatch(){
   const home = document.getElementById("home").value;
   const away = document.getElementById("away").value;
 
-  document.getElementById("teams").innerText = home+" vs "+away;
+  document.getElementById("teams").innerText = home + " vs " + away;
+
+  const select = document.getElementById("playerSelect");
+
+  for(let i=1;i<=15;i++){
+    const name = document.getElementById("p"+i).value;
+    if(name){
+      lineup[i]=name;
+      select.innerHTML += `<option>${i}-${name}</option>`;
+    }
+  }
 
   document.getElementById("setup").style.display="none";
   document.getElementById("match").style.display="block";
 }
 
+// pitch click (point + location)
+document.getElementById("pitch").onclick = function(e){
+  score.p++;
+  updateScore();
+
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const dot = document.createElement("div");
+  dot.className = "dot";
+  dot.style.left = x+"px";
+  dot.style.top = y+"px";
+  e.target.appendChild(dot);
+
+  events.push({type:"point"});
+};
+
+// scoring buttons
+function addScore(type){
+  if(type==="goal") score.g++;
+  if(type==="two") score.two++;
+  updateScore();
+
+  events.push({type:type});
+}
+
+// update score display
+function updateScore(){
+  document.getElementById("score").innerText =
+    score.g + "-" + (score.p + score.two*2);
+}
+
+// kickouts
 function kickout(team,type,result){
-  kickouts.push({team,type,result});
-}
-
-function showStats(){
-
-  document.getElementById("match").style.display="none";
-  document.getElementById("stats").style.display="block";
-
-  let own = kickouts.filter(k=>k.team==='own');
-  let opp = kickouts.filter(k=>k.team==='opp');
-
-  let ownWon = own.filter(k=>k.result==='won').length;
-  let oppWon = opp.filter(k=>k.result==='won').length;
-
-  let ownPct = own.length ? (ownWon/own.length*100).toFixed(1):0;
-  let oppPct = opp.length ? (oppWon/opp.length*100).toFixed(1):0;
-
-  let insight = "";
-
-  if(ownPct > 65 && oppPct < 40){
-    insight = "Dominating own kickouts, weak press";
-  } else if(ownPct < 50){
-    insight = "Struggling on own kickouts";
-  } else if(oppPct > 50){
-    insight = "Strong kickout press";
-  } else {
-    insight = "Balanced kickout battle";
-  }
-
-  document.getElementById("output").innerText =
-`Own Kickouts:
-${ownWon}/${own.length} (${ownPct}%)
-
-Opp Kickouts Won:
-${oppWon}/${opp.length} (${oppPct}%)
-
-Insight:
-${insight}`;
-}
-
-function back(){
-  document.getElementById("stats").style.display="none";
-  document.getElementById("match").style.display="block";
-}
-
-</script>
-
-</body>
-</html>
