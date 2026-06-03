@@ -1,26 +1,19 @@
-// FINAL WORKING VERSION
-
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
-const jerseyNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
-
-export default function GAAStatsApp() {
+export default function App() {
 
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
   const [lineup, setLineup] = useState({});
   const [setupComplete, setSetupComplete] = useState(false);
 
-  const [events, setEvents] = useState([]);
   const [selectedJersey, setSelectedJersey] = useState("");
-
-  const [time, setTime] = useState(0);
-  const [running, setRunning] = useState(false);
 
   const [score, setScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
   const [oppScore, setOppScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
+
+  const [time, setTime] = useState(0);
+  const [running, setRunning] = useState(false);
 
   const [lastAction, setLastAction] = useState("");
 
@@ -40,129 +33,73 @@ export default function GAAStatsApp() {
     if (type === "twoPointer") setScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }));
     if (type === "goal") setScore(s => ({ ...s, goals: s.goals + 1 }));
 
-    const newEvent = {
-      player: lineup[selectedJersey],
-      type,
-      time: formatTime()
-    };
-
-    setEvents([newEvent, ...events]);
-    setLastAction(`${newEvent.player} - ${type}`);
+    setLastAction(`${lineup[selectedJersey]} - ${type}`);
   };
 
-  const undoLast = () => {
-    if (!events.length) return;
-
-    const last = events[0];
-
-    if (last.type === "point") setScore(s => ({ ...s, points: s.points - 1 }));
-    if (last.type === "twoPointer") setScore(s => ({ ...s, twoPointers: s.twoPointers - 1 }));
-    if (last.type === "goal") setScore(s => ({ ...s, goals: s.goals - 1 }));
-
-    setEvents(e => e.slice(1));
-  };
-
-  // ✅ SETUP
   if (!setupComplete) {
     return (
-      <div className="p-3">
+      <div>
 
-        <Card>
-          <CardContent>
+        <h2>Match Setup</h2>
 
-            <h2 className="font-bold mb-2">Match Setup</h2>
+        <input placeholder="Home Team" onChange={e => setHomeTeam(e.target.value)} />
+        <input placeholder="Away Team" onChange={e => setAwayTeam(e.target.value)} />
 
+        {[...Array(15)].map((_, i) => {
+          const n = i + 1;
+          return (
             <input
-              className="border w-full mb-2"
-              placeholder="Home Team"
-              value={homeTeam}
-              onChange={e => setHomeTeam(e.target.value)}
+              key={n}
+              placeholder={`#${n}`}
+              onChange={e =>
+                setLineup({ ...lineup, [n]: e.target.value })
+              }
             />
+          );
+        })}
 
-            <input
-              className="border w-full mb-2"
-              placeholder="Opponent"
-              value={awayTeam}
-              onChange={e => setAwayTeam(e.target.value)}
-            />
-
-            <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-              {jerseyNumbers.map(n => (
-                <input
-                  key={n}
-                  placeholder={`#${n}`}
-                  value={lineup[n] || ""}
-                  onChange={e =>
-                    setLineup({ ...lineup, [n]: e.target.value }) // ✅ CRITICAL FIX
-                  }
-                  className="border"
-                />
-              ))}
-            </div>
-
-            <Button onClick={() => setSetupComplete(true)}>
-              Start Match
-            </Button>
-
-          </CardContent>
-        </Card>
+        <button onClick={() => setSetupComplete(true)}>Start</button>
 
       </div>
     );
   }
 
-  // ✅ MATCH SCREEN
   return (
-    <div className="p-3">
+    <div>
 
-      {/* SCORE */}
-      <div className="flex justify-end gap-6 font-bold mb-3">
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px" }}>
         <div>{homeTeam}: {score.goals}-{score.points + score.twoPointers * 2}</div>
         <div>{awayTeam}: {oppScore.goals}-{oppScore.points + oppScore.twoPointers * 2}</div>
       </div>
 
-      {/* TIMER */}
-      <div className="text-center mb-3">
-        <h2 className="text-2xl">{formatTime()}</h2>
+      <h2>{formatTime()}</h2>
 
-        <Button onClick={() => setRunning(true)}>Start</Button>
-        <Button onClick={() => setRunning(false)}>Pause</Button>
-      </div>
+      <button onClick={() => setRunning(true)}>Start</button>
+      <button onClick={() => setRunning(false)}>Pause</button>
 
-      {/* PLAYERS */}
-      <div className="grid grid-cols-5 gap-1 mb-3">
+      <div>
         {Object.keys(lineup).map(n => (
-          <Button
-            key={n}
-            onClick={() => setSelectedJersey(n)}
-          >
+          <button key={n} onClick={() => setSelectedJersey(n)}>
             {n}
-          </Button>
+          </button>
         ))}
       </div>
 
-      <p>
-        Selected: {selectedJersey ? `${selectedJersey} - ${lineup[selectedJersey]}` : "None"}
-      </p>
+      <p>Selected: {selectedJersey}</p>
 
-      {/* HOME */}
       <h3>Home</h3>
-      <Button onClick={() => addEvent("goal")}>Goal</Button>
-      <Button onClick={() => addEvent("twoPointer")}>2pt</Button>
-      <Button onClick={() => addEvent("point")}>1pt</Button>
+      <button onClick={() => addEvent("goal")}>Goal</button>
+      <button onClick={() => addEvent("twoPointer")}>2pt</button>
+      <button onClick={() => addEvent("point")}>1pt</button>
 
-      <br /><br />
-
-      <Button onClick={undoLast}>Undo</Button>
-
-      <p>{lastAction && `Last: ${lastAction}`}</p>
-
-      {/* OPP */}
       <h3>Opposition</h3>
-      <Button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>Opp Goal</Button>
-      <Button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>Opp 2pt</Button>
-      <Button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>Opp 1pt</Button>
+      <button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>Opp Goal</button>
+      <button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>Opp 2pt</button>
+      <button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>Opp 1pt</button>
+
+      <p>{lastAction}</p>
 
     </div>
   );
 }
+``
