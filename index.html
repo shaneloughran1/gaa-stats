@@ -2,23 +2,36 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAA Half Pitch</title>
+<title>GAA Half Pitch Accurate</title>
 
 <style>
 body { font-family: Arial; padding: 10px; }
 button { margin: 5px; padding: 10px; }
 
-/* HALF PITCH */
+/* PITCH */
 .pitch {
-  height: 320px;
+  height: 360px;
   width: 100%;
   background: #2e7d32;
   position: relative;
   border: 2px solid white;
 }
 
-/* GOAL LINE (TOP) */
-.goal-line {
+/* SIDELINES */
+.pitch::before,
+.pitch::after {
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:2px;
+  background:white;
+}
+.pitch::before { left:0; }
+.pitch::after { right:0; }
+
+/* END LINE (TOP) */
+.end-line {
   position:absolute;
   top:0;
   width:100%;
@@ -26,42 +39,60 @@ button { margin: 5px; padding: 10px; }
   background:white;
 }
 
-/* 45 LINE */
-.line45 {
+/* 13m + 21m + 45m + 65m */
+.line13 { top:18%; }
+.line21 { top:28%; }
+.line45 { top:55%; }
+.line65 { top:75%; }
+
+.line13, .line21, .line45, .line65 {
   position:absolute;
-  bottom:20%;
   width:100%;
   height:2px;
   background:white;
+  opacity:0.9;
 }
 
-/* LARGE RECTANGLE */
-.large-box {
-  position:absolute;
-  top:0;
-  left:20%;
-  width:60%;
-  height:28%;
-  border:2px solid white;
-}
-
-/* SMALL RECTANGLE */
+/* SMALL BOX */
 .small-box {
   position:absolute;
   top:0;
-  left:35%;
-  width:30%;
-  height:14%;
+  left:36%;
+  width:28%;
+  height:10%;
   border:2px solid white;
 }
 
-/* ✅ CORRECT ARC (NOW BELOW BOXES) */
-.arc {
+/* LARGE RECTANGLE (to 13m) */
+.large-box {
+  position:absolute;
+  top:0;
+  left:25%;
+  width:50%;
+  height:18%;
+  border:2px solid white;
+}
+
+/* ✅ 21m ARC (INNER) */
+.arc21 {
   position:absolute;
   top:28%;
   left:50%;
-  width:55%;
-  height:120px;
+  width:35%;
+  height:80px;
+  border:2px solid white;
+  border-top:none;
+  border-radius:0 0 50% 50% / 0 0 100% 100%;
+  transform:translateX(-50%);
+}
+
+/* ✅ 2 POINT ARC (OUTER + WIDER) */
+.arc2pt {
+  position:absolute;
+  top:28%;
+  left:50%;
+  width:75%;
+  height:140px;
   border:2px solid white;
   border-top:none;
   border-radius:0 0 50% 50% / 0 0 100% 100%;
@@ -71,8 +102,8 @@ button { margin: 5px; padding: 10px; }
 /* dots */
 .dot {
   position:absolute;
-  width:8px;
-  height:8px;
+  width:6px;
+  height:6px;
   border-radius:50%;
 }
 .own { background:red; }
@@ -83,29 +114,36 @@ button { margin: 5px; padding: 10px; }
 
 <body>
 
-<h2 id="score">0-0</h2>
-<h3 id="oppScore">Opp: 0-0</h3>
+<h3 id="score">0-0</h3>
+<h4 id="oppScore">Opp: 0-0</h4>
 
 <div class="pitch" id="pitch">
 
-  <div class="goal-line"></div>
-  <div class="large-box"></div>
-  <div class="small-box"></div>
+  <div class="end-line"></div>
 
-  <div class="arc"></div>
+  <div class="small-box"></div>
+  <div class="large-box"></div>
+
+  <div class="line13"></div>
+  <div class="line21"></div>
+
+  <!-- ✅ CORRECT ARCS -->
+  <div class="arc21"></div>
+  <div class="arc2pt"></div>
 
   <div class="line45"></div>
+  <div class="line65"></div>
 
 </div>
 
 <br>
 
-<h3>Own Score</h3>
+<h4>Own Score</h4>
 <button onclick="addScore('point')">1pt</button>
 <button onclick="addScore('goal')">Goal</button>
 <button onclick="addScore('two')">2pt</button>
 
-<h3>Opposition Score</h3>
+<h4>Opposition Score</h4>
 <button onclick="addOppScore('point')">1pt</button>
 <button onclick="addOppScore('goal')">Goal</button>
 <button onclick="addOppScore('two')">2pt</button>
@@ -121,14 +159,14 @@ button { margin: 5px; padding: 10px; }
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// pitch click
+// pitch click tracking
 document.getElementById("pitch").onclick = function(e){
 
   const rect = e.target.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
-  let isOpp = document.getElementById("oppToggle").checked;
+  const isOpp = document.getElementById("oppToggle").checked;
 
   const dot = document.createElement("div");
   dot.className = "dot " + (isOpp ? "opp" : "own");
@@ -145,7 +183,7 @@ document.getElementById("pitch").onclick = function(e){
   }
 };
 
-// scoring
+// scoring functions
 function addScore(type){
   if(type==="point") score.p++;
   if(type==="goal") score.g++;
@@ -160,7 +198,6 @@ function addOppScore(type){
   updateOpp();
 }
 
-// display
 function updateScore(){
   document.getElementById("score").innerText =
     score.g + "-" + (score.p + score.two*2);
@@ -175,3 +212,4 @@ function updateOpp(){
 
 </body>
 </html>
+``
