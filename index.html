@@ -1,14 +1,36 @@
 <!DOCTYPE html>
 <html>
-<head=1"><head>
-  <title>GAA Stats</title>
+<head>
+  <title>GAA Match Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
     body { font-family: Arial; padding: 10px; }
+
     button { margin:4px; padding:10px; }
 
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+    /* ✅ PITCH */
+    #pitch {
+      width:100%;
+      height:420px;
+      background:#2e7d32;
+      position:relative;
+      border:2px solid white;
+      margin-top:10px;
+    }
+
+    .line { position:absolute;width:100%;height:2px;background:white; }
+    .box { position:absolute;border:2px solid white; }
+
+    .dot {
+      position:absolute;
+      width:8px;height:8px;
+      border-radius:50%;
+      background:red;
+    }
   </style>
 </head>
 
@@ -23,10 +45,10 @@
     <h3>Home</h3>
     <input id="home" placeholder="Home Team"><br><br>
 
-    <b>1–15</b><br>
+    <b>1–15</b>
     <div id="players"></div>
 
-    <b>Subs</b><br>
+    <b>Subs</b>
     <div id="subs"></div>
   </div>
 
@@ -35,10 +57,10 @@
     <h3>Opponent</h3>
     <input id="away" placeholder="Opponent"><br><br>
 
-    <b>1–15</b><br>
+    <b>1–15</b>
     <div id="oppPlayers"></div>
 
-    <b>Subs</b><br>
+    <b>Subs</b>
     <div id="oppSubs"></div>
   </div>
 
@@ -49,8 +71,8 @@
 
 <hr>
 
-<!-- MATCH -->
-<div id="match" style="display:none">
+<!-- MATCH VIEW -->
+<div id="match" style="display:none;">
 
   <div id="score" style="font-weight:bold"></div>
 
@@ -69,6 +91,28 @@
 
   <h4 id="selected"></h4>
 
+  <!-- ✅ PITCH BACK -->
+  <h3>Pitch</h3>
+  <div id="pitch" onclick="logShot(event)">
+
+    <div class="line" style="top:0;"></div>
+    <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
+    <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
+
+    <div class="line" style="top:15%;"></div>
+    <div class="line" style="top:25%;"></div>
+
+    <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;"
+         viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path d="M5,0 Q50,80 95,0"
+            stroke="white" stroke-width="1.5" fill="none"/>
+    </svg>
+
+    <div class="line" style="top:70%;"></div>
+    <div class="line" style="top:88%;"></div>
+
+  </div>
+
   <!-- HOME -->
   <h3>Home</h3>
   <div class="grid3">
@@ -77,6 +121,14 @@
     <button onclick="add('Point')">1PT</button>
   </div>
 
+  <!-- KICKOUT -->
+  <h3>Kickouts</h3>
+  <div class="grid2">
+    <button onclick="kickout('won')">KO Won</button>
+    <button onclick="kickout('lost')">KO Lost</button>
+  </div>
+
+  <!-- OPP -->
   <h3>Opposition</h3>
   <div class="grid2">
     <button onclick="oppScoreAdd('Goal')">Goal</button>
@@ -109,19 +161,20 @@ let time=0;
 let running=false;
 let interval;
 
-// INPUTS
+/* INPUT SETUP */
 for(let i=1;i<=30;i++){
-  players.innerHTML += i<=15 ? `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>` : "";
-  subs.innerHTML += i>15 ? `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>` : "";
-
-  oppPlayers.innerHTML += i<=15 ? `<input placeholder="Opp #${i}" onchange="oppLineup[${i}]=this.value"><br>` : "";
-  oppSubs.innerHTML += i>15 ? `<input placeholder="Opp #${i}" onchange="oppLineup[${i}]=this.value"><br>` : "";
+  if(i<=15){
+    players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+    oppPlayers.innerHTML += `<input placeholder="Opp #${i}" onchange="oppLineup[${i}] = this.value"><br>`;
+  } else {
+    subs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+    oppSubs.innerHTML += `<input placeholder="Opp #${i}" onchange="oppLineup[${i}] = this.value"><br>`;
+  }
 }
 
-// BUILD BUTTONS
+/* BUILD BUTTONS */
 function buildButtons(){
 
-  // HOME BUTTONS
   let html="";
   for(let i=1;i<=30;i++){
     let disabled = i>15;
@@ -129,23 +182,21 @@ function buildButtons(){
   }
   playerButtons.innerHTML = html;
 
-  // OPP BUTTONS (always visible)
   let oppHtml="";
   for(let i=1;i<=30;i++){
     oppHtml += `<button onclick="selectOpp(${i})">${i}</button>`;
   }
   oppButtons.innerHTML = oppHtml;
-
 }
 
-// START MATCH
+/* START */
 function startMatch(){
-  document.getElementById("match").style.display="block";
+  match.style.display="block";
   buildButtons();
   updateScore();
 }
 
-// TIMER
+/* TIMER */
 function startTimer(){
   if(running)return;
   running=true;
@@ -167,14 +218,14 @@ function toggleHalf(){
   time=0;
 }
 
-// TIME
+/* TIME */
 function now(){
   let m=Math.floor(time/60).toString().padStart(2,"0");
   let s=(time%60).toString().padStart(2,"0");
   return `${half} ${m}:${s}`;
 }
 
-// SUB
+/* SUB */
 function startSub(){
   subMode=true;
   subOff=null;
@@ -184,11 +235,7 @@ function startSub(){
 function selectPlayer(n){
 
   if(subMode){
-    if(!subOff){
-      subOff=n;
-      last.innerText="Select player ON";
-      return;
-    }
+    if(!subOff){ subOff=n; last.innerText="Select player ON"; return; }
 
     let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
     let onBtn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
@@ -207,16 +254,15 @@ function selectPlayer(n){
 
   selected=n;
   let name=lineup[n];
-  document.getElementById("selected").innerText=
-    name?`#${n} - ${name}`:`#${n}`;
+  selectedDisplay.innerText=name?`#${n} - ${name}`:`#${n}`;
 }
 
-// OPP SELECT
+/* OPP SELECT */
 function selectOpp(n){
   selectedOpp=n;
 }
 
-// HOME SCORE
+/* HOME */
 function add(type){
   if(!selected)return;
 
@@ -230,9 +276,8 @@ function add(type){
   updateScore();
 }
 
-// OPP SCORE
+/* OPP */
 function oppScoreAdd(type){
-
   let name = selectedOpp ? (oppLineup[selectedOpp]||("#"+selectedOpp)) : "Opp";
 
   if(type==="Goal")oppScore.g++;
@@ -240,25 +285,39 @@ function oppScoreAdd(type){
   if(type==="Point")oppScore.p++;
 
   last.innerText=`🔴 ${now()} – ${name} - ${type}`;
-
   selectedOpp="";
   updateScore();
 }
 
-// OPP WIDE
 function oppWide(){
   let name = selectedOpp ? (oppLineup[selectedOpp]||("#"+selectedOpp)) : "Opp";
-
   last.innerText=`🔴 ${now()} – ${name} - Wide`;
   selectedOpp="";
 }
 
-// SCORE DISPLAY
+/* SCORE */
 function updateScore(){
   document.getElementById("score").innerText =
-    document.getElementById("home").value + ": " + score.g + "-" + (score.p + score.two*2)
-    + " | " +
-    document.getElementById("away").value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+    home.value+": "+score.g+"-"+(score.p+score.two*2)
+    +" | "+
+    away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
+}
+
+/* ✅ SHOT TRACKING */
+function logShot(e){
+  if(!selected) return;
+
+  let rect=document.getElementById("pitch").getBoundingClientRect();
+
+  let x=e.clientX-rect.left;
+  let y=e.clientY-rect.top;
+
+  let dot=document.createElement("div");
+  dot.className="dot";
+  dot.style.left=x+"px";
+  dot.style.top=y+"px";
+
+  pitch.appendChild(dot);
 }
 
 </script>
