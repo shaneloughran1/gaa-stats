@@ -110,3 +110,158 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   right:5%;
   width:70px;
   height:100px;
+  border:2px solid white;
+  border-left:none;
+  border-radius:0 100px 100px 0;
+}
+
+/* dots */
+.dot {
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
+.own { background:red; }
+.opp { background:yellow; }
+</style>
+</head>
+
+<body>
+
+<h2 id="teams"></h2>
+
+<div id="setup">
+<input id="home" placeholder="Home Team"><br>
+<input id="away" placeholder="Opponent"><br>
+<button onclick="startMatch()">Start Match</button>
+</div>
+
+<div id="match" style="display:none">
+
+<h2 id="score">0-0</h2>
+<h3 id="oppScore">Opp: 0-0</h3>
+
+<div class="pitch" id="pitch">
+
+  <!-- boxes -->
+  <div class="large-box large-top"></div>
+  <div class="large-box large-bottom"></div>
+
+  <div class="small-box small-top"></div>
+  <div class="small-box small-bottom"></div>
+
+  <!-- ✅ CORRECT ARCS -->
+  <div class="arc-top-left"></div>
+  <div class="arc-top-right"></div>
+  <div class="arc-bottom-left"></div>
+  <div class="arc-bottom-right"></div>
+
+  <div class="line45b"></div>
+
+</div>
+
+<br>
+
+<h3>Own Score</h3>
+<button onclick="addScore('point')">1pt</button>
+<button onclick="addScore('goal')">Goal</button>
+<button onclick="addScore('two')">2pt</button>
+
+<h3>Opposition Score</h3>
+<button onclick="addOppScore('point')">1pt</button>
+<button onclick="addOppScore('goal')">Goal</button>
+<button onclick="addOppScore('two')">2pt</button>
+
+<br><br>
+
+<label>
+<input type="checkbox" id="oppToggle"> Track Opposition Shots
+</label>
+
+<br><br>
+
+<button onclick="showStats()">View Stats</button>
+
+</div>
+
+<div id="stats" style="display:none">
+<pre id="output"></pre>
+<button onclick="back()">Back</button>
+</div>
+
+<script>
+
+let score = {g:0,p:0,two:0};
+let oppScore = {g:0,p:0,two:0};
+
+function startMatch(){
+  document.getElementById("setup").style.display="none";
+  document.getElementById("match").style.display="block";
+}
+
+document.getElementById("pitch").onclick = function(e){
+
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  let isOpp = document.getElementById("oppToggle").checked;
+
+  const dot = document.createElement("div");
+  dot.className = "dot " + (isOpp ? "opp" : "own");
+  dot.style.left = x+"px";
+  dot.style.top = y+"px";
+  e.target.appendChild(dot);
+
+  if(isOpp){
+    oppScore.p++;
+    updateOpp();
+  } else {
+    score.p++;
+    updateScore();
+  }
+};
+
+function addScore(type){
+  if(type==="point") score.p++;
+  if(type==="goal") score.g++;
+  if(type==="two") score.two++;
+  updateScore();
+}
+
+function addOppScore(type){
+  if(type==="point") oppScore.p++;
+  if(type==="goal") oppScore.g++;
+  if(type==="two") oppScore.two++;
+  updateOpp();
+}
+
+function updateScore(){
+  document.getElementById("score").innerText =
+    score.g + "-" + (score.p + score.two*2);
+}
+
+function updateOpp(){
+  document.getElementById("oppScore").innerText =
+    "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+}
+
+function showStats(){
+  document.getElementById("match").style.display="none";
+  document.getElementById("stats").style.display="block";
+
+  document.getElementById("output").innerText =
+`Own: ${score.g}-${score.p + score.two*2}
+Opp: ${oppScore.g}-${oppScore.p + oppScore.two*2}`;
+}
+
+function back(){
+  document.getElementById("stats").style.display="none";
+  document.getElementById("match").style.display="block";
+}
+
+</script>
+
+</body>
+</html>
