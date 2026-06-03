@@ -1,4 +1,4 @@
-// FULL ELITE VERSION — FIXED & WORKING
+// FINAL WORKING VERSION
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 const jerseyNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
 
 export default function GAAStatsApp() {
-
-  const [teamName, setTeamName] = useState("My Club");
 
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
@@ -26,19 +24,15 @@ export default function GAAStatsApp() {
 
   const [lastAction, setLastAction] = useState("");
 
-  // ✅ TIMER
   useEffect(() => {
     let t;
-    if (running) {
-      t = setInterval(() => setTime(x => x + 1), 1000);
-    }
+    if (running) t = setInterval(() => setTime(x => x + 1), 1000);
     return () => clearInterval(t);
   }, [running]);
 
   const formatTime = () =>
     `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(time % 60).padStart(2, "0")}`;
 
-  // ✅ ADD HOME EVENT
   const addEvent = (type) => {
     if (!selectedJersey || !lineup[selectedJersey]) return;
 
@@ -47,7 +41,6 @@ export default function GAAStatsApp() {
     if (type === "goal") setScore(s => ({ ...s, goals: s.goals + 1 }));
 
     const newEvent = {
-      jersey: selectedJersey,
       player: lineup[selectedJersey],
       type,
       time: formatTime()
@@ -57,7 +50,6 @@ export default function GAAStatsApp() {
     setLastAction(`${newEvent.player} - ${type}`);
   };
 
-  // ✅ UNDO
   const undoLast = () => {
     if (!events.length) return;
 
@@ -70,22 +62,15 @@ export default function GAAStatsApp() {
     setEvents(e => e.slice(1));
   };
 
-  // ✅ SETUP SCREEN
+  // ✅ SETUP
   if (!setupComplete) {
     return (
-      <div className="p-3 grid gap-3">
+      <div className="p-3">
 
         <Card>
           <CardContent>
 
             <h2 className="font-bold mb-2">Match Setup</h2>
-
-            <input
-              className="border w-full mb-2"
-              placeholder="Team Name"
-              value={teamName}
-              onChange={e => setTeamName(e.target.value)}
-            />
 
             <input
               className="border w-full mb-2"
@@ -108,7 +93,7 @@ export default function GAAStatsApp() {
                   placeholder={`#${n}`}
                   value={lineup[n] || ""}
                   onChange={e =>
-                    setLineup({ ...lineup, [n]: e.target.value }) // ✅ FIXED LINE
+                    setLineup({ ...lineup, [n]: e.target.value }) // ✅ CRITICAL FIX
                   }
                   className="border"
                 />
@@ -128,101 +113,55 @@ export default function GAAStatsApp() {
 
   // ✅ MATCH SCREEN
   return (
-    <div className="p-3 grid gap-3">
+    <div className="p-3">
 
-      {/* ✅ SCORE TOP RIGHT */}
-      <div className="flex justify-end gap-6 text-lg font-bold">
-        <div>
-          {homeTeam}: {score.goals}-{score.points + score.twoPointers * 2}
-        </div>
-        <div>
-          {awayTeam}: {oppScore.goals}-{oppScore.points + oppScore.twoPointers * 2}
-        </div>
+      {/* SCORE */}
+      <div className="flex justify-end gap-6 font-bold mb-3">
+        <div>{homeTeam}: {score.goals}-{score.points + score.twoPointers * 2}</div>
+        <div>{awayTeam}: {oppScore.goals}-{oppScore.points + oppScore.twoPointers * 2}</div>
       </div>
 
-      {/* ✅ TIMER */}
-      <Card>
-        <CardContent className="text-center">
-          <h2 className="text-2xl font-bold">{formatTime()}</h2>
+      {/* TIMER */}
+      <div className="text-center mb-3">
+        <h2 className="text-2xl">{formatTime()}</h2>
 
-          <div className="flex justify-center gap-2 mt-2">
-            <Button onClick={() => setRunning(true)}>Start</Button>
-            <Button onClick={() => setRunning(false)}>Pause</Button>
-            <Button onClick={() => { setTime(0); setRunning(false); }}>
-              Reset
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <Button onClick={() => setRunning(true)}>Start</Button>
+        <Button onClick={() => setRunning(false)}>Pause</Button>
+      </div>
 
-      {/* ✅ PLAYER GRID */}
-      <Card>
-        <CardContent>
-
-          <div className="grid grid-cols-5 gap-1 mb-3">
-            {Object.entries(lineup).map(([n]) => (
-              <Button
-                key={n}
-                variant={selectedJersey === n ? "default" : "outline"}
-                onClick={() => setSelectedJersey(n)}
-              >
-                {n}
-              </Button>
-            ))}
-          </div>
-
-          <div className="text-sm">
-            Selected: {selectedJersey
-              ? `#${selectedJersey} - ${lineup[selectedJersey]}`
-              : "None"}
-          </div>
-
-        </CardContent>
-      </Card>
-
-      {/* ✅ HOME ACTIONS */}
-      <Card>
-        <CardContent>
-
-          <h3 className="font-semibold mb-2">Home</h3>
-
-          <div className="grid grid-cols-3 gap-2">
-            <Button onClick={() => addEvent("goal")}>Goal</Button>
-            <Button onClick={() => addEvent("twoPointer")}>2pt</Button>
-            <Button onClick={() => addEvent("point")}>1pt</Button>
-          </div>
-
-          <Button onClick={undoLast} className="bg-red-500 mt-3">
-            Undo
+      {/* PLAYERS */}
+      <div className="grid grid-cols-5 gap-1 mb-3">
+        {Object.keys(lineup).map(n => (
+          <Button
+            key={n}
+            onClick={() => setSelectedJersey(n)}
+          >
+            {n}
           </Button>
+        ))}
+      </div>
 
-          <p className="text-sm text-center mt-2">
-            {lastAction && `Last: ${lastAction}`}
-          </p>
+      <p>
+        Selected: {selectedJersey ? `${selectedJersey} - ${lineup[selectedJersey]}` : "None"}
+      </p>
 
-        </CardContent>
-      </Card>
+      {/* HOME */}
+      <h3>Home</h3>
+      <Button onClick={() => addEvent("goal")}>Goal</Button>
+      <Button onClick={() => addEvent("twoPointer")}>2pt</Button>
+      <Button onClick={() => addEvent("point")}>1pt</Button>
 
-      {/* ✅ OPP ACTIONS */}
-      <Card>
-        <CardContent>
+      <br /><br />
 
-          <h3 className="font-semibold mb-2">Opposition</h3>
+      <Button onClick={undoLast}>Undo</Button>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>
-              Opp Goal
-            </Button>
-            <Button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>
-              Opp 2pt
-            </Button>
-            <Button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>
-              Opp 1pt
-            </Button>
-          </div>
+      <p>{lastAction && `Last: ${lastAction}`}</p>
 
-        </CardContent>
-      </Card>
+      {/* OPP */}
+      <h3>Opposition</h3>
+      <Button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>Opp Goal</Button>
+      <Button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>Opp 2pt</Button>
+      <Button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>Opp 1pt</Button>
 
     </div>
   );
