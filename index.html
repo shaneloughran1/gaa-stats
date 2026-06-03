@@ -78,7 +78,8 @@
     <div class="line" style="top:25%;"></div>
 
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M5,0 Q50,80 95,0" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M5,0 Q50,80 95,0"
+            stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
@@ -129,30 +130,30 @@
 let lineup = {};
 let selected = "";
 
+// ✅ scores
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// ✅ overall stats
+// ✅ stats
 let stats = {shots:0,wides:0,koWon:0,koLost:0};
-
-// ✅ HALF SPLIT
 let stats1 = {shots:0,wides:0,koWon:0,koLost:0};
 let stats2 = {shots:0,wides:0,koWon:0,koLost:0};
 
+// ✅ player scoring (BACK)
 let playerStats = {};
 
-let time = 0;
+let half="1st Half";
+let time=0;
 let running=false;
 let interval;
-let half="1st Half";
 
 function currentHalfStats(){
-  return half === "1st Half" ? stats1 : stats2;
+  return half==="1st Half"?stats1:stats2;
 }
 
 /* TIMER */
 function startTimer(){
-  if(running) return;
+  if(running)return;
   running=true;
   interval=setInterval(()=>{
     time++;
@@ -166,15 +167,15 @@ function pauseTimer(){
 }
 
 function toggleHalf(){
-  half = "2nd Half";
-  time = 0;
+  half="2nd Half";
+  time=0;
   updateTimerDisplay();
 }
 
 function updateTimerDisplay(){
   let m=Math.floor(time/60).toString().padStart(2,"0");
   let s=(time%60).toString().padStart(2,"0");
-  timer.innerText = half + " – " + m + ":" + s;
+  timer.innerText=half+" – "+m+":"+s;
 }
 
 function getTimeStamp(){
@@ -185,7 +186,7 @@ function getTimeStamp(){
 
 /* PLAYERS */
 for(let i=1;i<=15;i++){
-  players.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+  players.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
 }
 
 function startMatch(){
@@ -204,23 +205,38 @@ function selectPlayer(n){
   selectedDisplay.innerText="#"+n+" - "+lineup[n];
 }
 
-/* HOME */
+/* ✅ HOME (with player tracking) */
 function add(type){
-  if(!selected) return;
+  if(!selected)return;
 
-  let h = currentHalfStats();
+  if(!playerStats[selected]){
+    playerStats[selected]={g:0,p:0,two:0};
+  }
 
-  if(type==="Goal"){score.g++;stats.shots++;h.shots++;}
-  if(type==="2pt"){score.two++;stats.shots++;h.shots++;}
-  if(type==="Point"){score.p++;stats.shots++;h.shots++;}
+  let h=currentHalfStats();
+
+  if(type==="Goal"){
+    score.g++; stats.shots++; h.shots++;
+    playerStats[selected].g++;
+  }
+
+  if(type==="2pt"){
+    score.two++; stats.shots++; h.shots++;
+    playerStats[selected].two++;
+  }
+
+  if(type==="Point"){
+    score.p++; stats.shots++; h.shots++;
+    playerStats[selected].p++;
+  }
 
   last.innerText=`✅ ${getTimeStamp()} – ${lineup[selected]} - ${type}`;
-  updateScore();updateSummary();
+  updateScore(); updateSummary();
 }
 
 /* KICKOUT */
 function kickout(type){
-  let h = currentHalfStats();
+  let h=currentHalfStats();
 
   if(type==="won"){stats.koWon++;h.koWon++;}
   if(type==="lost"){stats.koLost++;h.koLost++;}
@@ -231,10 +247,9 @@ function kickout(type){
 
 /* WIDE */
 function wide(){
-  let h = currentHalfStats();
+  let h=currentHalfStats();
 
-  stats.wides++;
-  h.wides++;
+  stats.wides++; h.wides++;
 
   last.innerText=`⚪ ${getTimeStamp()} – Wide`;
   updateSummary();
@@ -250,13 +265,25 @@ function opp(type){
   updateScore();
 }
 
-/* SUMMARY */
+/* ✅ SUMMARY (WITH SCORERS ADDED BACK) */
 function updateSummary(){
 
-  let totalKO = stats.koWon + stats.koLost;
-  let koPerc = totalKO ? ((stats.koWon/totalKO)*100).toFixed(1) : 0;
+  let totalKO=stats.koWon+stats.koLost;
+  let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
 
-  summary.innerHTML =
+  // ✅ build scorers
+  let scorers = Object.entries(playerStats).map(([num,s])=>{
+    let total = s.g*3 + s.p + s.two*2;
+    return {name:lineup[num], g:s.g, p:s.p, total};
+  });
+
+  scorers.sort((a,b)=>b.total-a.total);
+
+  let scorerList = scorers.map(p =>
+    `${p.name} – ${p.g}-${p.p} (${p.total})`
+  ).join("<br>");
+
+  summary.innerHTML=
     "<b>Overall</b><br>"+
     "Shots: "+stats.shots+"<br>"+
     "Wides: "+stats.wides+"<br>"+
@@ -274,13 +301,14 @@ function updateSummary(){
     "Shots: "+stats2.shots+"<br>"+
     "Wides: "+stats2.wides+"<br>"+
     "KO Won: "+stats2.koWon+"<br>"+
-    "KO Lost: "+stats2.koLost;
+    "KO Lost: "+stats2.koLost+"<br><br>"+
+
+    "<b>Top Scorers</b><br>"+scorerList;
 }
 
 /* SCORE */
 function updateScore(){
-  scoreDiv=document.getElementById("score");
-  scoreDiv.textContent =
+  document.getElementById("score").textContent=
     home.value+": "+score.g+"-"+(score.p+score.two*2)
     +" | "+
     away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
