@@ -29,11 +29,11 @@
     }
 
     .dot {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: red;
+      position:absolute;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:red;
     }
 
     button { margin: 3px; padding: 8px; }
@@ -65,11 +65,11 @@
   <button onclick="start()">Start</button>
   <button onclick="pause()">Pause</button>
 
-  <!-- PLAYERS -->
+  <!-- PLAYER SELECT -->
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
 
-  <!-- ✅ CORRECT PITCH -->
+  <!-- ✅ CORRECTED PITCH -->
   <div id="pitch" onclick="logShot(event)">
 
     <!-- END LINE -->
@@ -87,11 +87,11 @@
     <!-- 21m -->
     <div class="line" style="top:25%;"></div>
 
-    <!-- ✅ ARC (CORRECT POSITION + SHAPE) -->
-    <svg style="position:absolute;top:25%;left:0;width:100%;height:55%;">
-      <path d="M5,0 Q50,95 95,0"
+    <!-- ✅ FIXED ARC (WIDE + CENTERED + TOUCHES 21 ONLY) -->
+    <svg style="position:absolute;top:25%;left:0;width:100%;height:220px;">
+      <path d="M0,0 Q300,220 600,0"
             stroke="white"
-            stroke-width="2"
+            stroke-width="3"
             fill="none"/>
     </svg>
 
@@ -149,7 +149,6 @@ function setPlayer(num,name){
 
 // START MATCH
 function startMatch(){
-
   document.getElementById("match").style.display = "block";
 
   document.getElementById("playerButtons").innerHTML =
@@ -165,7 +164,6 @@ function selectPlayer(n){
 
 // HOME EVENT
 function add(type){
-
   if(!selected) return;
 
   if(type==="goal") score.g++;
@@ -182,7 +180,6 @@ function add(type){
 
 // OPP EVENT
 function opp(type){
-
   if(type==="goal") oppScore.g++;
   if(type==="two") oppScore.two++;
   if(type==="point") oppScore.p++;
@@ -194,7 +191,6 @@ function opp(type){
 
 // UNDO
 function undo(){
-
   if(!lastEvent) return;
 
   if(lastEvent.team==="home"){
@@ -214,37 +210,34 @@ function undo(){
 
 // UPDATE SCORE
 function updateScore(){
-
   document.getElementById("score").innerText =
     document.getElementById("home").value + ": " +
     score.g + "-" + (score.p + score.two*2)
     + "   |   " +
     document.getElementById("away").value + ": " +
     oppScore.g + "-" + (oppScore.p + oppScore.two*2);
-
 }
 
 // TIMER
 function start(){
   if(running) return;
-  running = true;
+  running=true;
 
-  timer = setInterval(()=>{
+  timer=setInterval(()=>{
     time++;
-    const m = Math.floor(time/60).toString().padStart(2,"0");
-    const s = (time%60).toString().padStart(2,"0");
-    document.getElementById("timer").innerText = m + ":" + s;
+    const m=Math.floor(time/60).toString().padStart(2,"0");
+    const s=(time%60).toString().padStart(2,"0");
+    document.getElementById("timer").innerText=m+":"+s;
   },1000);
 }
 
 function pause(){
-  running = false;
+  running=false;
   clearInterval(timer);
 }
 
 // SHOT TRACKING
 function logShot(e){
-
   if(!selected) return;
 
   const pitch = document.getElementById("pitch");
@@ -259,11 +252,10 @@ function logShot(e){
   dot.style.top = y + "px";
 
   pitch.appendChild(dot);
-
-  console.log("Shot:", lineup[selected], x, y);
 }
 
 </script>
 
 </body>
 </html>
+``
