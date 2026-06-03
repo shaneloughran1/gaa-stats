@@ -16,7 +16,7 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   border: 2px solid white;
 }
 
-/* halfway line */
+/* halfway */
 .pitch::before {
   content:"";
   position:absolute;
@@ -35,7 +35,6 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   height:2px;
   background:rgba(255,255,255,0.7);
 }
-
 .line45b {
   position:absolute;
   top:75%;
@@ -44,50 +43,60 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
   background:rgba(255,255,255,0.7);
 }
 
-/* LARGE RECTANGLE */
+/* boxes */
 .large-box {
   position:absolute;
-  left:25%;
-  width:50%;
-  height:22%;
+  left:22%;
+  width:56%;
+  height:18%;
   border:2px solid white;
 }
-
 .large-top { top:0; }
 .large-bottom { bottom:0; }
 
-/* SMALL RECTANGLE */
 .small-box {
   position:absolute;
   left:35%;
   width:30%;
-  height:10%;
+  height:9%;
   border:2px solid white;
 }
-
 .small-top { top:0; }
 .small-bottom { bottom:0; }
 
-/* 40m ARC */
-.arc {
+/* arc */
+.arc-top {
   position:absolute;
+  top:18%;
   left:50%;
-  width:120px;
-  height:120px;
+  width:140px;
+  height:70px;
   border:2px solid white;
-  border-radius:50%;
-  transform:translateX(-50%);
   border-bottom:none;
+  border-radius:140px 140px 0 0;
+  transform:translateX(-50%);
+}
+.arc-bottom {
+  position:absolute;
+  bottom:18%;
+  left:50%;
+  width:140px;
+  height:70px;
+  border:2px solid white;
+  border-top:none;
+  border-radius:0 0 140px 140px;
+  transform:translateX(-50%);
 }
 
-.arc-top { top:22%; }
-.arc-bottom { bottom:22%; transform:translateX(-50%) rotate(180deg); }
-
-/* dots */
-.dot { position:absolute; width:8px;height:8px;border-radius:50%; }
+/* shot dots */
+.dot {
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
 .own { background:red; }
 .opp { background:yellow; }
-
 </style>
 </head>
 
@@ -99,7 +108,6 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 <input id="home" placeholder="Home Team"><br>
 <input id="away" placeholder="Opponent"><br>
 
-<h3>Lineup</h3>
 <div id="players"></div>
 
 <button onclick="startMatch()">Start Match</button>
@@ -114,29 +122,27 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 <option>Select Player</option>
 </select>
 
-<!-- FULL PITCH -->
 <div class="pitch" id="pitch">
-
   <div class="large-box large-top"></div>
   <div class="large-box large-bottom"></div>
-
   <div class="small-box small-top"></div>
   <div class="small-box small-bottom"></div>
-
-  <div class="arc arc-top"></div>
-  <div class="arc arc-bottom"></div>
-
+  <div class="arc-top"></div>
+  <div class="arc-bottom"></div>
   <div class="line45b"></div>
-
 </div>
 
 <br>
 
+<!-- ✅ OWN SCORING -->
 <h3>Own Score</h3>
+<button onclick="addScore('point')">1pt</button>
 <button onclick="addScore('goal')">Goal</button>
 <button onclick="addScore('two')">2pt</button>
 
+<!-- ✅ OPP SCORING -->
 <h3>Opposition Score</h3>
+<button onclick="addOppScore('point')">1pt</button>
 <button onclick="addOppScore('goal')">Goal</button>
 <button onclick="addOppScore('two')">2pt</button>
 
@@ -149,7 +155,7 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 <br><br>
 
 <label>
-<input type="checkbox" id="oppToggle"> Track Opposition Shots
+<input type="checkbox" id="oppToggle"> Track Opposition Shots on Pitch
 </label>
 
 <br><br>
@@ -159,57 +165,33 @@ button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 </div>
 
 <div id="stats" style="display:none">
-
 <pre id="output"></pre>
-
 <button onclick="back()">Back</button>
-
 </div>
 
 <script>
 
-let lineup = {};
 let events = [];
 let kickouts = [];
 
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
+// setup simple lineup (kept)
 const playersDiv = document.getElementById("players");
-
-/* FORMATION */
-playersDiv.innerHTML = `
-<div style="text-align:center">
-<input placeholder="#1" id="p1"><br><br>
-<input placeholder="#2"><input placeholder="#3"><input placeholder="#4"><br><br>
-<input placeholder="#5" id="p5"><input placeholder="#6"><input placeholder="#7"><br><br>
-<input placeholder="#8" id="p8"><input placeholder="#9"><br><br>
-<input placeholder="#10"><input placeholder="#11"><input placeholder="#12"><br><br>
-<input placeholder="#13"><input placeholder="#14"><input placeholder="#15">
-</div>`;
+playersDiv.innerHTML = `<input placeholder="Player names optional"><br>`;
 
 // start
 function startMatch(){
   const home = document.getElementById("home").value;
   const away = document.getElementById("away").value;
-
-  document.getElementById("teams").innerText = home+" vs "+away;
-
-  const select = document.getElementById("playerSelect");
-
-  for(let i=1;i<=15;i++){
-    let input = document.getElementById("p"+i);
-    if(input && input.value){
-      lineup[i]=input.value;
-      select.innerHTML += `<option value="${i}">${i} ${input.value}</option>`;
-    }
-  }
+  document.getElementById("teams").innerText = home + " vs " + away;
 
   document.getElementById("setup").style.display="none";
   document.getElementById("match").style.display="block";
 }
 
-// tap pitch
+// pitch tap
 document.getElementById("pitch").onclick = function(e){
 
   const rect = e.target.getBoundingClientRect();
@@ -226,34 +208,36 @@ document.getElementById("pitch").onclick = function(e){
 
   if(isOpp){
     oppScore.p++;
-    updateOppScore();
-    events.push({team:"opp", type:"point"});
+    updateOpp();
   } else {
     score.p++;
     updateScore();
-    events.push({team:"own", type:"point"});
   }
 };
 
-// scoring
+// ✅ OWN
 function addScore(type){
+  if(type==="point") score.p++;
   if(type==="goal") score.g++;
   if(type==="two") score.two++;
   updateScore();
 }
 
+// ✅ OPP
 function addOppScore(type){
+  if(type==="point") oppScore.p++;
   if(type==="goal") oppScore.g++;
   if(type==="two") oppScore.two++;
-  updateOppScore();
+  updateOpp();
 }
 
+// display
 function updateScore(){
   document.getElementById("score").innerText =
     score.g + "-" + (score.p + score.two*2);
 }
 
-function updateOppScore(){
+function updateOpp(){
   document.getElementById("oppScore").innerText =
     "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
@@ -264,7 +248,6 @@ function kickout(team,result){
 
 // stats
 function showStats(){
-
   document.getElementById("match").style.display="none";
   document.getElementById("stats").style.display="block";
 
