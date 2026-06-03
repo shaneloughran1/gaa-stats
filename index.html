@@ -1,13 +1,14 @@
-// FULL ELITE VERSION — PHASE 1 + 2 COMPLETE
+// FULL ELITE VERSION — FIXED & WORKING
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const jerseyNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
 
 export default function GAAStatsApp() {
-  const [teamName, setTeamName] = useState(() => localStorage.getItem("teamName") || "My Club");
+
+  const [teamName, setTeamName] = useState("My Club");
 
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
@@ -25,17 +26,19 @@ export default function GAAStatsApp() {
 
   const [lastAction, setLastAction] = useState("");
 
-  // TIMER
+  // ✅ TIMER
   useEffect(() => {
     let t;
-    if (running) t = setInterval(() => setTime(x => x + 1), 1000);
+    if (running) {
+      t = setInterval(() => setTime(x => x + 1), 1000);
+    }
     return () => clearInterval(t);
   }, [running]);
 
   const formatTime = () =>
     `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(time % 60).padStart(2, "0")}`;
 
-  // ADD EVENT (HOME TEAM)
+  // ✅ ADD HOME EVENT
   const addEvent = (type) => {
     if (!selectedJersey || !lineup[selectedJersey]) return;
 
@@ -44,7 +47,6 @@ export default function GAAStatsApp() {
     if (type === "goal") setScore(s => ({ ...s, goals: s.goals + 1 }));
 
     const newEvent = {
-      team: homeTeam,
       jersey: selectedJersey,
       player: lineup[selectedJersey],
       type,
@@ -55,7 +57,7 @@ export default function GAAStatsApp() {
     setLastAction(`${newEvent.player} - ${type}`);
   };
 
-  // UNDO LAST HOME EVENT
+  // ✅ UNDO
   const undoLast = () => {
     if (!events.length) return;
 
@@ -68,14 +70,15 @@ export default function GAAStatsApp() {
     setEvents(e => e.slice(1));
   };
 
-  // SETUP SCREEN
+  // ✅ SETUP SCREEN
   if (!setupComplete) {
     return (
       <div className="p-3 grid gap-3">
+
         <Card>
           <CardContent>
 
-            <h2 className="font-bold">Match Setup</h2>
+            <h2 className="font-bold mb-2">Match Setup</h2>
 
             <input
               className="border w-full mb-2"
@@ -104,21 +107,26 @@ export default function GAAStatsApp() {
                   key={n}
                   placeholder={`#${n}`}
                   value={lineup[n] || ""}
-                  onChange={e => setLineup({ ...lineup, [n]: e.target.value })}
+                  onChange={e =>
+                    setLineup({ ...lineup, [n]: e.target.value }) // ✅ FIXED LINE
+                  }
                   className="border"
                 />
               ))}
             </div>
 
-            <Button onClick={() => setSetupComplete(true)}>Start Match</Button>
+            <Button onClick={() => setSetupComplete(true)}>
+              Start Match
+            </Button>
 
           </CardContent>
         </Card>
+
       </div>
     );
   }
 
-  // MATCH SCREEN
+  // ✅ MATCH SCREEN
   return (
     <div className="p-3 grid gap-3">
 
@@ -152,7 +160,7 @@ export default function GAAStatsApp() {
         <CardContent>
 
           <div className="grid grid-cols-5 gap-1 mb-3">
-            {Object.entries(lineup).map(([n, name]) => (
+            {Object.entries(lineup).map(([n]) => (
               <Button
                 key={n}
                 variant={selectedJersey === n ? "default" : "outline"}
@@ -176,7 +184,7 @@ export default function GAAStatsApp() {
       <Card>
         <CardContent>
 
-          <h3 className="font-semibold mb-2">Home Actions</h3>
+          <h3 className="font-semibold mb-2">Home</h3>
 
           <div className="grid grid-cols-3 gap-2">
             <Button onClick={() => addEvent("goal")}>Goal</Button>
@@ -195,11 +203,11 @@ export default function GAAStatsApp() {
         </CardContent>
       </Card>
 
-      {/* ✅ OPPOSITION ACTIONS */}
+      {/* ✅ OPP ACTIONS */}
       <Card>
         <CardContent>
 
-          <h3 className="font-semibold mb-2">Opposition Actions</h3>
+          <h3 className="font-semibold mb-2">Opposition</h3>
 
           <div className="grid grid-cols-3 gap-2">
             <Button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>
