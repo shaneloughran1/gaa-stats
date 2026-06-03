@@ -6,11 +6,11 @@
 
 <style>
 body { font-family: Arial; padding: 10px; }
-button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
+button, select, input { margin: 5px; padding: 10px; font-size: 15px; }
 
-/* ✅ PITCH WITH MARKINGS */
+/* PITCH */
 .pitch {
-  height: 260px;
+  height: 300px;
   position: relative;
   background: #2e7d32;
   border: 2px solid white;
@@ -18,55 +18,77 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 
 /* halfway line */
 .pitch::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  height: 2px;
-  background: white;
-}
-
-/* 45m line (top) */
-.pitch::after {
-  content: "";
-  position: absolute;
-  top: 25%;
-  width: 100%;
-  height: 2px;
-  background: rgba(255,255,255,0.6);
-}
-
-/* 45m bottom */
-.line45b {
-  position: absolute;
-  top: 75%;
-  width: 100%;
-  height: 2px;
-  background: rgba(255,255,255,0.6);
-}
-
-/* goal boxes */
-.goalbox {
-  position: absolute;
-  left: 30%;
-  width: 40%;
-  height: 12%;
-  border: 2px solid white;
-}
-
-.goal-top { top: 0; }
-.goal-bottom { bottom: 0; }
-
-/* shot dots */
-.dot {
+  content:"";
   position:absolute;
-  width:8px;
-  height:8px;
-  background:red;
-  border-radius:50%;
+  top:50%;
+  width:100%;
+  height:2px;
+  background:white;
 }
-</style>
 
+/* 45 lines */
+.pitch::after {
+  content:"";
+  position:absolute;
+  top:25%;
+  width:100%;
+  height:2px;
+  background:rgba(255,255,255,0.7);
+}
+
+.line45b {
+  position:absolute;
+  top:75%;
+  width:100%;
+  height:2px;
+  background:rgba(255,255,255,0.7);
+}
+
+/* LARGE RECTANGLE */
+.large-box {
+  position:absolute;
+  left:25%;
+  width:50%;
+  height:22%;
+  border:2px solid white;
+}
+
+.large-top { top:0; }
+.large-bottom { bottom:0; }
+
+/* SMALL RECTANGLE */
+.small-box {
+  position:absolute;
+  left:35%;
+  width:30%;
+  height:10%;
+  border:2px solid white;
+}
+
+.small-top { top:0; }
+.small-bottom { bottom:0; }
+
+/* 40m ARC */
+.arc {
+  position:absolute;
+  left:50%;
+  width:120px;
+  height:120px;
+  border:2px solid white;
+  border-radius:50%;
+  transform:translateX(-50%);
+  border-bottom:none;
+}
+
+.arc-top { top:22%; }
+.arc-bottom { bottom:22%; transform:translateX(-50%) rotate(180deg); }
+
+/* dots */
+.dot { position:absolute; width:8px;height:8px;border-radius:50%; }
+.own { background:red; }
+.opp { background:yellow; }
+
+</style>
 </head>
 
 <body>
@@ -86,55 +108,59 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 <div id="match" style="display:none">
 
 <h2 id="score">0-0</h2>
+<h3 id="oppScore">Opp: 0-0</h3>
 
 <select id="playerSelect">
 <option>Select Player</option>
 </select>
 
-<!-- ✅ MARKED PITCH -->
+<!-- FULL PITCH -->
 <div class="pitch" id="pitch">
-  <div class="goalbox goal-top"></div>
-  <div class="goalbox goal-bottom"></div>
+
+  <div class="large-box large-top"></div>
+  <div class="large-box large-bottom"></div>
+
+  <div class="small-box small-top"></div>
+  <div class="small-box small-bottom"></div>
+
+  <div class="arc arc-top"></div>
+  <div class="arc arc-bottom"></div>
+
   <div class="line45b"></div>
+
 </div>
 
 <br>
 
+<h3>Own Score</h3>
 <button onclick="addScore('goal')">Goal</button>
 <button onclick="addScore('two')">2pt</button>
 
-<h3>Own Kickouts</h3>
-<button onclick="kickout('own','short','won')">Short Won</button>
-<button onclick="kickout('own','short','lost')">Short Lost</button>
-<button onclick="kickout('own','long','won')">Long Won</button>
-<button onclick="kickout('own','long','lost')">Long Lost</button>
+<h3>Opposition Score</h3>
+<button onclick="addOppScore('goal')">Goal</button>
+<button onclick="addOppScore('two')">2pt</button>
 
-<h3>Opposition Kickouts</h3>
-<button onclick="kickout('opp','short','won')">Press Won</button>
-<button onclick="kickout('opp','short','lost')">Press Lost</button>
-<button onclick="kickout('opp','long','won')">Long Won</button>
-<button onclick="kickout('opp','long','lost')">Long Lost</button>
+<h3>Kickouts</h3>
+<button onclick="kickout('own','won')">Own Won</button>
+<button onclick="kickout('own','lost')">Own Lost</button>
+<button onclick="kickout('opp','won')">Press Won</button>
+<button onclick="kickout('opp','lost')">Press Lost</button>
+
+<br><br>
+
+<label>
+<input type="checkbox" id="oppToggle"> Track Opposition Shots
+</label>
 
 <br><br>
 
 <button onclick="showStats()">View Stats</button>
-<button onclick="saveMatch()">Save Match</button>
 
 </div>
 
 <div id="stats" style="display:none">
 
-<h3>Player Stats</h3>
-<pre id="playerStats"></pre>
-
-<h3>Scoring</h3>
-<pre id="scoreStats"></pre>
-
-<h3>Kickouts</h3>
-<pre id="kickStats"></pre>
-
-<h3>Insights</h3>
-<pre id="insight"></pre>
+<pre id="output"></pre>
 
 <button onclick="back()">Back</button>
 
@@ -145,52 +171,37 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 let lineup = {};
 let events = [];
 let kickouts = [];
+
 let score = {g:0,p:0,two:0};
+let oppScore = {g:0,p:0,two:0};
 
 const playersDiv = document.getElementById("players");
 
-/* ✅ CORRECT GAA FORMATION */
+/* FORMATION */
 playersDiv.innerHTML = `
 <div style="text-align:center">
+<input placeholder="#1" id="p1"><br><br>
+<input placeholder="#2"><input placeholder="#3"><input placeholder="#4"><br><br>
+<input placeholder="#5" id="p5"><input placeholder="#6"><input placeholder="#7"><br><br>
+<input placeholder="#8" id="p8"><input placeholder="#9"><br><br>
+<input placeholder="#10"><input placeholder="#11"><input placeholder="#12"><br><br>
+<input placeholder="#13"><input placeholder="#14"><input placeholder="#15">
+</div>`;
 
-<input placeholder="#1 (GK)" id="p1"><br><br>
-
-<input placeholder="#2" id="p2">
-<input placeholder="#3" id="p3">
-<input placeholder="#4" id="p4"><br><br>
-
-<input placeholder="#5" id="p5">
-<input placeholder="#6" id="p6">
-<input placeholder="#7" id="p7"><br><br>
-
-<input placeholder="#8" id="p8">
-<input placeholder="#9" id="p9"><br><br>
-
-<input placeholder="#10" id="p10">
-<input placeholder="#11" id="p11">
-<input placeholder="#12" id="p12"><br><br>
-
-<input placeholder="#13" id="p13">
-<input placeholder="#14" id="p14">
-<input placeholder="#15" id="p15">
-
-</div>
-`;
-
-// start match
+// start
 function startMatch(){
   const home = document.getElementById("home").value;
   const away = document.getElementById("away").value;
 
-  document.getElementById("teams").innerText = home + " vs " + away;
+  document.getElementById("teams").innerText = home+" vs "+away;
 
   const select = document.getElementById("playerSelect");
 
   for(let i=1;i<=15;i++){
-    const name = document.getElementById("p"+i).value;
-    if(name){
-      lineup[i]=name;
-      select.innerHTML += `<option value="${i}">#${i} ${name}</option>`;
+    let input = document.getElementById("p"+i);
+    if(input && input.value){
+      lineup[i]=input.value;
+      select.innerHTML += `<option value="${i}">${i} ${input.value}</option>`;
     }
   }
 
@@ -198,38 +209,43 @@ function startMatch(){
   document.getElementById("match").style.display="block";
 }
 
-// ✅ pitch click = tracked shot
+// tap pitch
 document.getElementById("pitch").onclick = function(e){
-
-  const jersey = document.getElementById("playerSelect").value;
-  if(!jersey) return alert("Select player first");
-
-  score.p++;
-  updateScore();
 
   const rect = e.target.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
+  let isOpp = document.getElementById("oppToggle").checked;
+
   const dot = document.createElement("div");
-  dot.className = "dot";
+  dot.className = "dot " + (isOpp ? "opp" : "own");
   dot.style.left = x+"px";
   dot.style.top = y+"px";
   e.target.appendChild(dot);
 
-  events.push({player: lineup[jersey], type:"point"});
+  if(isOpp){
+    oppScore.p++;
+    updateOppScore();
+    events.push({team:"opp", type:"point"});
+  } else {
+    score.p++;
+    updateScore();
+    events.push({team:"own", type:"point"});
+  }
 };
 
+// scoring
 function addScore(type){
-  const jersey = document.getElementById("playerSelect").value;
-  if(!jersey) return alert("Select player first");
-
   if(type==="goal") score.g++;
   if(type==="two") score.two++;
-
   updateScore();
+}
 
-  events.push({player: lineup[jersey], type:type});
+function addOppScore(type){
+  if(type==="goal") oppScore.g++;
+  if(type==="two") oppScore.two++;
+  updateOppScore();
 }
 
 function updateScore(){
@@ -237,74 +253,39 @@ function updateScore(){
     score.g + "-" + (score.p + score.two*2);
 }
 
-function kickout(team,type,result){
-  kickouts.push({team,type,result});
+function updateOppScore(){
+  document.getElementById("oppScore").innerText =
+    "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
+function kickout(team,result){
+  kickouts.push({team,result});
+}
+
+// stats
 function showStats(){
 
   document.getElementById("match").style.display="none";
   document.getElementById("stats").style.display="block";
 
-  let stats = {};
-  events.forEach(e=>{
-    if(!stats[e.player]) stats[e.player]={shots:0,score:0};
-    stats[e.player].shots++;
+  let ownKO = kickouts.filter(k=>k.team==="own");
+  let oppKO = kickouts.filter(k=>k.team==="opp");
 
-    if(e.type==="point") stats[e.player].score+=1;
-    if(e.type==="two") stats[e.player].score+=2;
-    if(e.type==="goal") stats[e.player].score+=3;
-  });
+  let ownPct = ownKO.length ? (ownKO.filter(k=>k.result==="won").length/ownKO.length*100).toFixed(1):0;
+  let oppPct = oppKO.length ? (oppKO.filter(k=>k.result==="won").length/oppKO.length*100).toFixed(1):0;
 
-  let playerText="";
-  Object.entries(stats).forEach(([p,s])=>{
-    playerText += `${p}: Shots ${s.shots}, Score ${s.score}\n`;
-  });
-  document.getElementById("playerStats").innerText = playerText;
+  document.getElementById("output").innerText = 
+`Own Score: ${score.g}-${score.p + score.two*2}
+Opp Score: ${oppScore.g}-${oppScore.p + oppScore.two*2}
 
-  let shots = events.length;
-  let totalScore = score.p + score.two*2 + score.g*3;
-  let conv = shots ? (totalScore/(shots*3)*100).toFixed(1):0;
-
-  document.getElementById("scoreStats").innerText =
-`Shots: ${shots}
-Conversion: ${conv}%`;
-
-  let own = kickouts.filter(k=>k.team==='own');
-  let opp = kickouts.filter(k=>k.team==='opp');
-
-  let ownWon = own.filter(k=>k.result==='won').length;
-  let oppWon = opp.filter(k=>k.result==='won').length;
-
-  let ownPct = own.length ? (ownWon/own.length*100).toFixed(1):0;
-  let oppPct = opp.length ? (oppWon/opp.length*100).toFixed(1):0;
-
-  document.getElementById("kickStats").innerText =
-`Own Kickouts: ${ownWon}/${own.length} (${ownPct}%)
-Opp Press: ${oppWon}/${opp.length} (${oppPct}%)`;
-
-  let insightText = "";
-
-  if(conv < 50) insightText += "Low scoring efficiency\n";
-  else insightText += "Good scoring efficiency\n";
-
-  if(ownPct < 50) insightText += "Kickouts under pressure\n";
-  else insightText += "Kickouts strong\n";
-
-  if(oppPct > 50) insightText += "Press working well\n";
-  else insightText += "Press ineffective\n";
-
-  document.getElementById("insight").innerText = insightText;
+Kickouts:
+Own: ${ownPct}%
+Press: ${oppPct}%`;
 }
 
 function back(){
   document.getElementById("stats").style.display="none";
   document.getElementById("match").style.display="block";
-}
-
-function saveMatch(){
-  alert("Match saved ✅");
-  location.reload();
 }
 
 </script>
