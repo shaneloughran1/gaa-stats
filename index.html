@@ -6,6 +6,7 @@
 
   <style>
     body { font-family: Arial; padding: 10px; }
+
     #pitch {
       width: 100%;
       height: 420px;
@@ -57,19 +58,21 @@
 
 <div id="match" style="display:none;">
 
-  <!-- ✅ SCORE -->
+  <!-- SCORE -->
   <div id="score" style="font-weight:bold; float:right;"></div>
 
-  <!-- ✅ TIMER RESTORED -->
-  <h2 id="timer">00:00</h2>
+  <!-- ✅ HALF + TIMER -->
+  <h2 id="timer">1st Half – 00:00</h2>
+
   <button onclick="startTimer()">Start</button>
   <button onclick="pauseTimer()">Pause</button>
+  <button onclick="toggleHalf()">Next Half</button>
 
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
   <h4 id="selected"></h4>
 
-  <!-- ✅ PITCH -->
+  <!-- PITCH -->
   <div id="pitch" onclick="logShot(event)">
     <div class="line" style="top:0;"></div>
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
@@ -78,8 +81,7 @@
     <div class="line" style="top:25%;"></div>
 
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M5,0 Q50,80 95,0"
-            stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M5,0 Q50,80 95,0" stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
@@ -139,30 +141,47 @@ let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
 let stats = {shots:0,wides:0,koWon:0,koLost:0};
-
 let playerStats = {};
+
 let lastEvent = null;
 
-/* ✅ TIMER */
+/* ✅ TIMER + HALF */
 let time = 0;
 let running = false;
 let interval;
+let half = "1st Half";
 
 function startTimer(){
   if(running) return;
+  running=true;
 
-  running = true;
   interval = setInterval(()=>{
     time++;
-    let m = Math.floor(time/60).toString().padStart(2,"0");
-    let s = (time%60).toString().padStart(2,"0");
-    timer.textContent = m + ":" + s;
+    updateTimerDisplay();
   },1000);
 }
 
 function pauseTimer(){
-  running = false;
+  running=false;
   clearInterval(interval);
+}
+
+function toggleHalf(){
+  half = (half === "1st Half") ? "2nd Half" : "1st Half";
+  time = 0;
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(){
+  let m = Math.floor(time/60).toString().padStart(2,"0");
+  let s = (time%60).toString().padStart(2,"0");
+  document.getElementById("timer").innerText = half + " – " + m + ":" + s;
+}
+
+function getTimeStamp(){
+  let m = Math.floor(time/60).toString().padStart(2,"0");
+  let s = (time%60).toString().padStart(2,"0");
+  return half + " " + m + ":" + s;
 }
 
 /* PLAYERS */
@@ -181,9 +200,10 @@ function startMatch(){
   updateSummary();
 }
 
+/* SELECT PLAYER */
 function selectPlayer(n){
   selected = n;
-  selectedDisplay.textContent = "#"+n+" - "+lineup[n];
+  selectedDisplay.innerText = "#"+n+" - "+lineup[n];
 }
 
 /* HOME */
@@ -192,13 +212,11 @@ function add(type){
 
   if(!playerStats[selected]) playerStats[selected] = {g:0,p:0,two:0};
 
-  if(type==="Goal"){ score.g++; stats.shots++; playerStats[selected].g++; }
-  if(type==="2pt"){ score.two++; stats.shots++; playerStats[selected].two++; }
-  if(type==="Point"){ score.p++; stats.shots++; playerStats[selected].p++; }
+  if(type==="Goal"){score.g++;stats.shots++;playerStats[selected].g++;}
+  if(type==="2pt"){score.two++;stats.shots++;playerStats[selected].two++;}
+  if(type==="Point"){score.p++;stats.shots++;playerStats[selected].p++;}
 
-  last.innerText = "✅ "+lineup[selected]+" - "+type;
-  lastEvent={type,team:"home",player:selected};
-
+  last.innerText = `✅ ${getTimeStamp()} – ${lineup[selected]} - ${type}`;
   updateScore(); updateSummary();
 }
 
@@ -207,17 +225,14 @@ function kickout(type){
   if(type==="won") stats.koWon++;
   if(type==="lost") stats.koLost++;
 
-  last.innerText = "⚪ KO " + type;
-  lastEvent={type,team:"ko"};
-
+  last.innerText = `⚪ ${getTimeStamp()} – KO ${type}`;
   updateSummary();
 }
 
 /* WIDE */
 function wide(){
   stats.wides++;
-  last.innerText="⚪ Wide";
-  lastEvent={team:"wide"};
+  last.innerText = `⚪ ${getTimeStamp()} – Wide`;
   updateSummary();
 }
 
@@ -227,9 +242,13 @@ function opp(type){
   if(type==="2pt") oppScore.two++;
   if(type==="Point") oppScore.p++;
 
-  last.innerText="🔴 Opp - "+type;
-
+  last.innerText = `🔴 ${getTimeStamp()} – Opp ${type}`;
   updateScore(); updateSummary();
+}
+
+/* QUICK */
+function quick(type){
+  last.innerText = `⚡ ${getTimeStamp()} – ${type}`;
 }
 
 /* SUMMARY */
@@ -237,12 +256,12 @@ function updateSummary(){
 
   let scorers = Object.entries(playerStats).map(([num,s])=>{
     let total = s.g*3 + s.p + s.two*2;
-    return {name: lineup[num], g:s.g, p:s.p, total};
+    return {name:lineup[num],g:s.g,p:s.p,total};
   });
 
   scorers.sort((a,b)=>b.total-a.total);
 
-  let list = scorers.map(p => `${p.name} – ${p.g}-${p.p} (${p.total})`).join("<br>");
+  let list = scorers.map(p=>`${p.name} – ${p.g}-${p.p} (${p.total})`).join("<br>");
 
   let totalKO = stats.koWon + stats.koLost;
   let koPerc = totalKO ? ((stats.koWon/totalKO)*100).toFixed(1) : 0;
@@ -258,14 +277,14 @@ function updateSummary(){
 
 /* SCORE */
 function updateScore(){
-  scoreDiv=document.getElementById("score");
-  scoreDiv.textContent =
-    home.value + ": " + score.g + "-" + (score.p + score.two*2)
-    + " | " +
-    away.value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+  score.textContent =
+    home.value+": "+score.g+"-"+(score.p+score.two*2)
+    +" | "+
+    away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
 }
 
 </script>
 
 </body>
 </html>
+``
