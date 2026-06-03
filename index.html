@@ -1,198 +1,177 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAA Half Pitch FINAL CORRECT</title>
+// FULL ELITE VERSION — UPDATED WITH PHASE 1 + PHASE 2 FIXES + OPP SCORING
 
-<style>
-body { font-family: Arial; padding: 10px; }
-button { margin: 5px; padding: 10px; }
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-/* PITCH */
-.pitch {
-  height: 450px;
-  width: 100%;
-  background: #2e7d32;
-  position: relative;
-  border: 2px solid white;
-}
+const jerseyNumbers = Array.from({ length: 30 }, (_, i) => i + 1);
 
-/* SIDELINES */
-.pitch::before,
-.pitch::after {
-  content:"";
-  position:absolute;
-  top:0;
-  bottom:0;
-  width:2px;
-  background:white;
-}
-.pitch::before { left:0; }
-.pitch::after { right:0; }
+export default function GAAStatsApp() {
+  const pitchRef = useRef(null);
+  const chartRef = useRef(null);
 
-/* END LINE */
-.end-line {
-  position:absolute;
-  top:0;
-  width:100%;
-  height:2px;
-  background:white;
-}
+  const [teamName, setTeamName] = useState(() => localStorage.getItem("teamName") || "My Club");
+  const [primaryColor, setPrimaryColor] = useState(() => localStorage.getItem("primaryColor") || "#16a34a");
 
-/* BOXES */
-.small-box {
-  position:absolute;
-  top:0;
-  left:36%;
-  width:28%;
-  height:10%;
-  border:2px solid white;
-}
+  const [homeTeam, setHomeTeam] = useState("");
+  const [awayTeam, setAwayTeam] = useState("");
+  const [lineup, setLineup] = useState({});
+  const [setupComplete, setSetupComplete] = useState(false);
 
-.large-box {
-  position:absolute;
-  top:0;
-  left:25%;
-  width:50%;
-  height:15%;
-  border:2px solid white;
-}
+  const [events, setEvents] = useState([]);
+  const [selectedJersey, setSelectedJersey] = useState("");
 
-/* LINES */
-.line13 { top:15%; }
-.line21 { top:25%; }
-.line45 { top:75%; }
-.line65 { top:90%; }
+  const [time, setTime] = useState(0);
+  const [running, setRunning] = useState(false);
 
-.line13, .line21, .line45, .line65 {
-  position:absolute;
-  width:100%;
-  height:2px;
-  background:white;
-}
+  const [score, setScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
+  const [oppScore, setOppScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
 
-/* SVG ARC */
-.arc-svg {
-  position:absolute;
-  top:25%;   /* base sits on 21m */
-  left:0;
-  width:100%;
-  height:55%;  /* more depth area */
-  pointer-events:none;
-}
+  const [lastAction, setLastAction] = useState("");
 
-/* dots */
-.dot {
-  position:absolute;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-}
-.own { background:red; }
-.opp { background:yellow; }
+  useEffect(() => {
+    let t;
+    if (running) t = setInterval(() => setTime(x => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [running]);
 
-</style>
-</head>
+  const formatTime = () => `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(time % 60).padStart(2, "0")}`;
 
-<body>
+  const addEvent = (type) => {
+    if (!selectedJersey || !lineup[selectedJersey]) return;
 
-<h3 id="score">0-0</h3>
-<h4 id="oppScore">Opp: 0-0</h4>
+    if (type === "point") setScore(s => ({ ...s, points: s.points + 1 }));
+    if (type === "twoPointer") setScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }));
+    if (type === "goal") setScore(s => ({ ...s, goals: s.goals + 1 }));
 
-<div class="pitch" id="pitch">
+    const newEvent = {
+      team: homeTeam,
+      jersey: selectedJersey,
+      player: lineup[selectedJersey],
+      type,
+      time: formatTime()
+    };
 
-  <div class="end-line"></div>
+    setEvents([newEvent, ...events]);
+    setLastAction(`${newEvent.player} - ${type}`);
+  };
 
-  <div class="small-box"></div>
-  <div class="large-box"></div>
+  const undoLast = () => {
+    if (!events.length) return;
 
-  <div class="line13"></div>
-  <div class="line21"></div>
+    const last = events[0];
 
-  <!-- ✅ DEEPER ARC -->
-  <svg class="arc-svg" viewBox="0 0 100 60" preserveAspectRatio="none">
-    <path d="M5,0 Q50,80 95,0"
-          stroke="white"
-          stroke-width="0.5"
-          fill="none"/>
-  </svg>
+    if (last.type === "point") setScore(s => ({ ...s, points: s.points - 1 }));
+    if (last.type === "twoPointer") setScore(s => ({ ...s, twoPointers: s.twoPointers - 1 }));
+    if (last.type === "goal") setScore(s => ({ ...s, goals: s.goals - 1 }));
 
-  <div class="line45"></div>
-  <div class="line65"></div>
+    setEvents(e => e.slice(1));
+  };
 
-</div>
+  if (!setupComplete) {
+    return (
+      <div className="p-3 grid gap-3">
+        <Card><CardContent>
+          <h2 className="font-bold">Match Setup</h2>
 
-<br>
+          <input
+            className="border w-full mb-2"
+            placeholder="Team Name"
+            value={teamName}
+            onChange={e => setTeamName(e.target.value)}
+          />
 
-<h4>Own Score</h4>
-<button onclick="addScore('point')">1pt</button>
-<button onclick="addScore('goal')">Goal</button>
-<button onclick="addScore('two')">2pt</button>
+          <input className="border w-full mb-2" placeholder="Home Team" value={homeTeam} onChange={e => setHomeTeam(e.target.value)} />
+          <input className="border w-full mb-2" placeholder="Opponent" value={awayTeam} onChange={e => setAwayTeam(e.target.value)} />
 
-<h4>Opposition Score</h4>
-<button onclick="addOppScore('point')">1pt</button>
-<button onclick="addOppScore('goal')">Goal</button>
-<button onclick="addOppScore('two')">2pt</button>
+          <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+            {jerseyNumbers.map(n => (
+              <input
+                key={n}
+                placeholder={`#${n}`}
+                value={lineup[n] || ""}
+                onChange={e => setLineup({ ...lineup, [n]: e.target.value })}
+                className="border"
+              />
+            ))}
+          </div>
 
-<br><br>
-
-<label>
-<input type="checkbox" id="oppToggle"> Track Opposition Shots
-</label>
-
-<script>
-
-let score = {g:0,p:0,two:0};
-let oppScore = {g:0,p:0,two:0};
-
-document.getElementById("pitch").onclick = function(e){
-
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const isOpp = document.getElementById("oppToggle").checked;
-
-  const dot = document.createElement("div");
-  dot.className = "dot " + (isOpp ? "opp" : "own");
-  dot.style.left = x+"px";
-  dot.style.top = y+"px";
-  e.target.appendChild(dot);
-
-  if(isOpp){
-    oppScore.p++;
-    updateOpp();
-  } else {
-    score.p++;
-    updateScore();
+          <Button onClick={() => setSetupComplete(true)}>Start Match</Button>
+        </CardContent></Card>
+      </div>
+    );
   }
-};
 
-function addScore(type){
-  if(type==="point") score.p++;
-  if(type==="goal") score.g++;
-  if(type==="two") score.two++;
-  updateScore();
+  return (
+    <div className="p-3 grid gap-3">
+
+      {/* SCORE TOP RIGHT */}
+      <div className="flex justify-end gap-6 text-lg font-bold">
+        <div>{homeTeam}: {score.goals}-{score.points + score.twoPointers * 2}</div>
+        <div>{awayTeam}: {oppScore.goals}-{oppScore.points + oppScore.twoPointers * 2}</div>
+      </div>
+
+      {/* TIMER */}
+      <Card><CardContent className="text-center">
+        <h2 className="text-2xl font-bold">{formatTime()}</h2>
+        <div className="flex justify-center gap-2 mt-2">
+          <Button onClick={() => setRunning(true)}>Start</Button>
+          <Button onClick={() => setRunning(false)}>Pause</Button>
+          <Button onClick={() => { setTime(0); setRunning(false); }}>Reset</Button>
+        </div>
+      </CardContent></Card>
+
+      {/* PLAYER GRID */}
+      <Card><CardContent>
+        <div className="grid grid-cols-5 gap-1 mb-3">
+          {Object.entries(lineup).map(([n, name]) => (
+            <Button
+              key={n}
+              variant={selectedJersey === n ? "default" : "outline"}
+              onClick={() => setSelectedJersey(n)}
+            >
+              {n}
+            </Button>
+          ))}
+        </div>
+
+        <div className="text-sm">
+          Selected: {selectedJersey ? `#${selectedJersey} - ${lineup[selectedJersey]}` : "None"}
+        </div>
+      </CardContent></Card>
+
+      {/* HOME TEAM ACTIONS */}
+      <Card><CardContent>
+        <h3 className="font-semibold mb-2">Home Actions</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <Button onClick={() => addEvent("goal")}>Goal</Button>
+          <Button onClick={() => addEvent("twoPointer")}>2pt</Button>
+          <Button onClick={() => addEvent("point")}>1pt</Button>
+        </div>
+
+        <Button onClick={undoLast} className="bg-red-500 mt-3">Undo</Button>
+
+        <p className="text-sm text-center mt-2">
+          {lastAction && `Last: ${lastAction}`}
+        </p>
+      </CardContent></Card>
+
+      {/* OPPOSITION ACTIONS */}
+      <Card><CardContent>
+        <h3 className="font-semibold mb-2">Opposition Actions</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <Button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>
+            Opp Goal
+          </Button>
+          <Button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>
+            Opp 2pt
+          </Button>
+          <Button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>
+            Opp 1pt
+          </Button>
+        </div>
+      </CardContent></Card>
+
+    </div>
+  );
 }
-
-function addOppScore(type){
-  if(type==="point") oppScore.p++;
-  if(type==="goal") oppScore.g++;
-  if(type==="two") oppScore.two++;
-  updateOpp();
-}
-
-function updateScore(){
-  document.getElementById("score").innerText =
-    score.g + "-" + (score.p + score.two*2);
-}
-
-function updateOpp(){
-  document.getElementById("oppScore").innerText =
-    "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
-}
-
-</script>
-
-</body>
-</html>
