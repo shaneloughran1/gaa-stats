@@ -21,7 +21,9 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 <input id="home" placeholder="Home Team"><br>
 <input id="away" placeholder="Opponent"><br>
 
+<h3>Lineup</h3>
 <div id="players"></div>
+
 <button onclick="startMatch()">Start Match</button>
 </div>
 
@@ -29,117 +31,7 @@ button, select, input { margin: 5px; padding: 12px; font-size: 16px; }
 
 <h2 id="score">0-0</h2>
 
-<select id="playerSelect"></select>
+<select id="playerSelect">
+<option>Select Player</option>
+</select>
 
-<div class="pitch" id="pitch">Tap for point</div>
-
-<br>
-
-<button onclick="addScore('goal')">Goal</button>
-<button onclick="addScore('two')">2pt</button>
-
-<h3>Own Kickouts</h3>
-<button onclick="kickout('own','short','won')">Short Won</button>
-<button onclick="kickout('own','short','lost')">Short Lost</button>
-<button onclick="kickout('own','long','won')">Long Won</button>
-<button onclick="kickout('own','long','lost')">Long Lost</button>
-
-<h3>Opposition Kickouts</h3>
-<button onclick="kickout('opp','short','won')">Press Won</button>
-<button onclick="kickout('opp','short','lost')">Press Lost</button>
-<button onclick="kickout('opp','long','won')">Long Won</button>
-<button onclick="kickout('opp','long','lost')">Long Lost</button>
-
-<br><br>
-
-<button onclick="showStats()">View Stats</button>
-<button onclick="saveMatch()">Save Match</button>
-
-</div>
-
-<div id="stats" style="display:none">
-
-<h3>Scoring</h3>
-<pre id="scoreStats"></pre>
-
-<h3>Kickouts</h3>
-<pre id="kickStats"></pre>
-
-<h3>Insights</h3>
-<pre id="insight"></pre>
-
-<button onclick="back()">Back</button>
-
-</div>
-
-<script>
-
-let lineup = {};
-let events = [];
-let kickouts = [];
-
-let score = {g:0,p:0,two:0};
-
-const playersDiv = document.getElementById("players");
-
-// lineup inputs
-for(let i=1;i<=15;i++){
-  playersDiv.innerHTML += `<input placeholder="#${i}" id="p${i}"><br>`;
-}
-
-// start match
-function startMatch(){
-  const home = document.getElementById("home").value;
-  const away = document.getElementById("away").value;
-
-  document.getElementById("teams").innerText = home + " vs " + away;
-
-  const select = document.getElementById("playerSelect");
-
-  for(let i=1;i<=15;i++){
-    const name = document.getElementById("p"+i).value;
-    if(name){
-      lineup[i]=name;
-      select.innerHTML += `<option>${i}-${name}</option>`;
-    }
-  }
-
-  document.getElementById("setup").style.display="none";
-  document.getElementById("match").style.display="block";
-}
-
-// pitch click (point + location)
-document.getElementById("pitch").onclick = function(e){
-  score.p++;
-  updateScore();
-
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const dot = document.createElement("div");
-  dot.className = "dot";
-  dot.style.left = x+"px";
-  dot.style.top = y+"px";
-  e.target.appendChild(dot);
-
-  events.push({type:"point"});
-};
-
-// scoring buttons
-function addScore(type){
-  if(type==="goal") score.g++;
-  if(type==="two") score.two++;
-  updateScore();
-
-  events.push({type:type});
-}
-
-// update score display
-function updateScore(){
-  document.getElementById("score").innerText =
-    score.g + "-" + (score.p + score.two*2);
-}
-
-// kickouts
-function kickout(team,type,result){
