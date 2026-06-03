@@ -1,105 +1,129 @@
-import { useState, useEffect } from "react";
+<!DOCTYPE html><!DOCTYPE<head>
+  <title>GAA Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 
-export default function App() {
+<body>
 
-  const [homeTeam, setHomeTeam] = useState("");
-  const [awayTeam, setAwayTeam] = useState("");
-  const [lineup, setLineup] = useState({});
-  const [setupComplete, setSetupComplete] = useState(false);
+<h2>Match Setup</h2>
 
-  const [selectedJersey, setSelectedJersey] = useState("");
+<input id="home" placeholder="Home Team"><br><br>
+<input id="away" placeholder="Opponent"><br><br>
 
-  const [score, setScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
-  const [oppScore, setOppScore] = useState({ goals: 0, points: 0, twoPointers: 0 });
+<h3>Players</h3>
+<div id="players"></div>
 
-  const [time, setTime] = useState(0);
-  const [running, setRunning] = useState(false);
+<button onclick="startMatch()">Start Match</button>
 
-  const [lastAction, setLastAction] = useState("");
+<hr>
 
-  useEffect(() => {
-    let t;
-    if (running) t = setInterval(() => setTime(x => x + 1), 1000);
-    return () => clearInterval(t);
-  }, [running]);
+<div id="match" style="display:none;">
 
-  const formatTime = () =>
-    `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(time % 60).padStart(2, "0")}`;
+  <div id="score" style="font-weight:bold;"></div>
 
-  const addEvent = (type) => {
-    if (!selectedJersey || !lineup[selectedJersey]) return;
+  <h2 id="timer">00:00</h2>
+  <button onclick="start()">Start</button>
+  <button onclick="pause()">Pause</button>
 
-    if (type === "point") setScore(s => ({ ...s, points: s.points + 1 }));
-    if (type === "twoPointer") setScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }));
-    if (type === "goal") setScore(s => ({ ...s, goals: s.goals + 1 }));
+  <h3>Select Player</h3>
+  <div id="playerButtons"></div>
 
-    setLastAction(`${lineup[selectedJersey]} - ${type}`);
-  };
+  <h3>Home</h3>
+  <button onclick="add('goal')">Goal</button>
+  <button onclick="add('two')">2pt</button>
+  <button onclick="add('point')">1pt</button>
 
-  if (!setupComplete) {
-    return (
-      <div>
+  <h3>Opposition</h3>
+  <button onclick="opp('goal')">Opp Goal</button>
+  <button onclick="opp('two')">Opp 2pt</button>
+  <button onclick="opp('point')">Opp 1pt</button>
 
-        <h2>Match Setup</h2>
+  <h4 id="last"></h4>
 
-        <input placeholder="Home Team" onChange={e => setHomeTeam(e.target.value)} />
-        <input placeholder="Away Team" onChange={e => setAwayTeam(e.target.value)} />
+</div>
 
-        {[...Array(15)].map((_, i) => {
-          const n = i + 1;
-          return (
-            <input
-              key={n}
-              placeholder={`#${n}`}
-              onChange={e =>
-                setLineup({ ...lineup, [n]: e.target.value })
-              }
-            />
-          );
-        })}
+<script>
 
-        <button onClick={() => setSetupComplete(true)}>Start</button>
+let lineup = {};
+let selected = "";
+let time = 0;
+let running = false;
 
-      </div>
-    );
-  }
+let score = {g:0,p:0,two:0};
+let oppScore = {g:0,p:0,two:0};
 
-  return (
-    <div>
+let timer;
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px" }}>
-        <div>{homeTeam}: {score.goals}-{score.points + score.twoPointers * 2}</div>
-        <div>{awayTeam}: {oppScore.goals}-{oppScore.points + oppScore.twoPointers * 2}</div>
-      </div>
+const playersDiv = document.getElementById("players");
 
-      <h2>{formatTime()}</h2>
-
-      <button onClick={() => setRunning(true)}>Start</button>
-      <button onClick={() => setRunning(false)}>Pause</button>
-
-      <div>
-        {Object.keys(lineup).map(n => (
-          <button key={n} onClick={() => setSelectedJersey(n)}>
-            {n}
-          </button>
-        ))}
-      </div>
-
-      <p>Selected: {selectedJersey}</p>
-
-      <h3>Home</h3>
-      <button onClick={() => addEvent("goal")}>Goal</button>
-      <button onClick={() => addEvent("twoPointer")}>2pt</button>
-      <button onClick={() => addEvent("point")}>1pt</button>
-
-      <h3>Opposition</h3>
-      <button onClick={() => setOppScore(s => ({ ...s, goals: s.goals + 1 }))}>Opp Goal</button>
-      <button onClick={() => setOppScore(s => ({ ...s, twoPointers: s.twoPointers + 1 }))}>Opp 2pt</button>
-      <button onClick={() => setOppScore(s => ({ ...s, points: s.points + 1 }))}>Opp 1pt</button>
-
-      <p>{lastAction}</p>
-
-    </div>
-  );
+// create inputs
+for(let i=1;i<=15;i++){
+  playersDiv.innerHTML += `<input placeholder="#${i}" onchange="setPlayer(${i}, this.value)"><br>`;
 }
-``
+
+function setPlayer(num,name){
+  lineup[num]=name;
+}
+
+function startMatch(){
+  document.getElementById("match").style.display="block";
+
+  document.getElementById("playerButtons").innerHTML =
+    Object.keys(lineup).map(n =>
+      `<button onclick="selectPlayer(${n})">${n}</button>`
+    ).join("");
+}
+
+function selectPlayer(n){
+  selected = n;
+}
+
+function add(type){
+  if(!selected) return;
+
+  if(type==="goal") score.g++;
+  if(type==="two") score.two++;
+  if(type==="point") score.p++;
+
+  document.getElementById("last").innerText =
+    lineup[selected] + " - " + type;
+
+  updateScore();
+}
+
+function opp(type){
+  if(type==="goal") oppScore.g++;
+  if(type==="two") oppScore.two++;
+  if(type==="point") oppScore.p++;
+
+  updateScore();
+}
+
+function updateScore(){
+  document.getElementById("score").innerText =
+    document.getElementById("home").value + ": " +
+    score.g + "-" + (score.p + score.two*2)
+    + " | " +
+    document.getElementById("away").value + ": " +
+    oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+}
+
+function start(){
+  running=true;
+  timer=setInterval(()=>{
+    time++;
+    const m=Math.floor(time/60).toString().padStart(2,"0");
+    const s=(time%60).toString().padStart(2,"0");
+    document.getElementById("timer").innerText=m+":"+s;
+  },1000);
+}
+
+function pause(){
+  clearInterval(timer);
+}
+
+</script>
+
+</body>
+</html>
+<html>
