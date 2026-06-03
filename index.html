@@ -57,15 +57,12 @@
 
 <div id="match" style="display:none;">
 
-  <!-- SCORE -->
   <div id="score" style="font-weight:bold; float:right;"></div>
 
-  <!-- TIMER -->
   <h2 id="timer">00:00</h2>
   <button onclick="start()">Start</button>
   <button onclick="pause()">Pause</button>
 
-  <!-- PLAYER SELECT -->
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
 
@@ -75,36 +72,27 @@
     <!-- END LINE -->
     <div class="line" style="top:0;"></div>
 
-    <!-- SMALL BOX -->
+    <!-- BOXES -->
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
-
-    <!-- BIG BOX -->
     <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
 
-    <!-- 13m -->
+    <!-- LINES -->
     <div class="line" style="top:15%;"></div>
-
-    <!-- ✅ 21m (ARC TOUCHES THIS) -->
     <div class="line" style="top:25%;"></div>
 
-    <!-- ✅ ✅ CORRECT ARC (FINAL) -->
-    <svg style="
-      position:absolute;
-      top:25%;
-      left:0;
-      width:100%;
-      height:50%;
-    ">
-      <path d="M0,0 Q50,100 100,0"
+    <!-- ✅ ✅ WORKABLE ARC (FIXED PROPERLY) -->
+    <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;"
+         viewBox="0 0 100 100"
+         preserveAspectRatio="none">
+
+      <path d="M5,0 Q50,80 95,0"
             stroke="white"
-            stroke-width="3"
+            stroke-width="1"
             fill="none"/>
     </svg>
 
-    <!-- ✅ 45m (CLEAR GAP BELOW ARC) -->
+    <!-- LOWER LINES -->
     <div class="line" style="top:70%;"></div>
-
-    <!-- 65m -->
     <div class="line" style="top:88%;"></div>
 
   </div>
@@ -128,7 +116,6 @@
 
 <script>
 
-// DATA
 let lineup = {};
 let selected = "";
 let time = 0;
@@ -140,35 +127,23 @@ let oppScore = {g:0,p:0,two:0};
 
 let lastEvent = null;
 
-// PLAYERS
 const playersDiv = document.getElementById("players");
 
 for (let i=1;i<=15;i++){
   playersDiv.innerHTML += `
-    <input placeholder="#${i}" onchange="setPlayer(${i}, this.value)"><br>
+    <input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>
   `;
 }
 
-function setPlayer(num,name){
-  lineup[num] = name;
-}
-
-// START MATCH
 function startMatch(){
   document.getElementById("match").style.display = "block";
 
   document.getElementById("playerButtons").innerHTML =
     Object.keys(lineup).map(n =>
-      `<button onclick="selectPlayer(${n})">${n}</button>`
+      `<button onclick="selected=${n}">${n}</button>`
     ).join("");
 }
 
-// SELECT PLAYER
-function selectPlayer(n){
-  selected = n;
-}
-
-// HOME
 function add(type){
   if(!selected) return;
 
@@ -178,13 +153,9 @@ function add(type){
 
   lastEvent = {type, team:"home"};
 
-  document.getElementById("last").innerText =
-    lineup[selected] + " - " + type;
-
   updateScore();
 }
 
-// OPP
 function opp(type){
   if(type==="goal") oppScore.g++;
   if(type==="two") oppScore.two++;
@@ -195,7 +166,6 @@ function opp(type){
   updateScore();
 }
 
-// UNDO
 function undo(){
   if(!lastEvent) return;
 
@@ -203,9 +173,7 @@ function undo(){
     if(lastEvent.type==="goal") score.g--;
     if(lastEvent.type==="two") score.two--;
     if(lastEvent.type==="point") score.p--;
-  }
-
-  if(lastEvent.team==="opp"){
+  } else {
     if(lastEvent.type==="goal") oppScore.g--;
     if(lastEvent.type==="two") oppScore.two--;
     if(lastEvent.type==="point") oppScore.p--;
@@ -214,7 +182,6 @@ function undo(){
   updateScore();
 }
 
-// SCORE DISPLAY
 function updateScore(){
   document.getElementById("score").innerText =
     document.getElementById("home").value + ": " +
@@ -224,7 +191,6 @@ function updateScore(){
     oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
-// TIMER
 function start(){
   if(running) return;
   running=true;
@@ -242,7 +208,6 @@ function pause(){
   clearInterval(timer);
 }
 
-// SHOT TRACKING
 function logShot(e){
   if(!selected) return;
 
