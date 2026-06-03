@@ -2,91 +2,69 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAA Stats Elite</title>
+<title>GAA Half Pitch</title>
 
 <style>
 body { font-family: Arial; padding: 10px; }
 button { margin: 5px; padding: 10px; }
 
-/* PITCH */
+/* HALF PITCH */
 .pitch {
   height: 320px;
-  position: relative;
+  width: 100%;
   background: #2e7d32;
+  position: relative;
   border: 2px solid white;
 }
 
-/* Halfway */
-.pitch::before {
-  content:"";
+/* GOAL LINE (TOP) */
+.goal-line {
   position:absolute;
-  top:50%;
+  top:0;
   width:100%;
   height:2px;
   background:white;
 }
 
-/* 45 lines */
-.pitch::after {
-  content:"";
+/* 45 LINE */
+.line45 {
   position:absolute;
-  top:25%;
+  bottom:20%;
   width:100%;
   height:2px;
-  background:rgba(255,255,255,0.7);
+  background:white;
 }
 
-.line45b {
-  position:absolute;
-  top:75%;
-  width:100%;
-  height:2px;
-  background:rgba(255,255,255,0.7);
-}
-
-/* GOAL AREA BOXES */
+/* LARGE RECTANGLE */
 .large-box {
   position:absolute;
-  width:50%;
-  left:25%;
-  height:20%;
+  top:0;
+  left:20%;
+  width:60%;
+  height:28%;
   border:2px solid white;
 }
-.large-top { top:0; }
-.large-bottom { bottom:0; }
 
+/* SMALL RECTANGLE */
 .small-box {
   position:absolute;
-  width:30%;
+  top:0;
   left:35%;
-  height:10%;
+  width:30%;
+  height:14%;
   border:2px solid white;
 }
-.small-top { top:0; }
-.small-bottom { bottom:0; }
 
-/* ✅ CORRECT 40m ARC (single wide arc like real pitch) */
-.arc-top {
+/* ✅ CORRECT ARC (NOW BELOW BOXES) */
+.arc {
   position:absolute;
-  top:22%;
+  top:28%;
   left:50%;
-  width:70%;
-  height:120px;
-  border:2px solid white;
-  border-bottom:none;
-  border-radius:50% / 100%;
-  transform:translateX(-50%);
-}
-
-.arc-bottom {
-  position:absolute;
-  bottom:22%;
-  left:50%;
-  width:70%;
+  width:55%;
   height:120px;
   border:2px solid white;
   border-top:none;
-  border-radius:50% / 100%;
+  border-radius:0 0 50% 50% / 0 0 100% 100%;
   transform:translateX(-50%);
 }
 
@@ -110,18 +88,13 @@ button { margin: 5px; padding: 10px; }
 
 <div class="pitch" id="pitch">
 
-  <!-- Boxes -->
-  <div class="large-box large-top"></div>
-  <div class="large-box large-bottom"></div>
+  <div class="goal-line"></div>
+  <div class="large-box"></div>
+  <div class="small-box"></div>
 
-  <div class="small-box small-top"></div>
-  <div class="small-box small-bottom"></div>
+  <div class="arc"></div>
 
-  <!-- ✅ Correct arcs -->
-  <div class="arc-top"></div>
-  <div class="arc-bottom"></div>
-
-  <div class="line45b"></div>
+  <div class="line45"></div>
 
 </div>
 
@@ -143,20 +116,12 @@ button { margin: 5px; padding: 10px; }
 <input type="checkbox" id="oppToggle"> Track Opposition Shots
 </label>
 
-<br><br>
-
-<button onclick="showStats()">View Stats</button>
-
-<div id="stats" style="display:none">
-<pre id="output"></pre>
-<button onclick="back()">Back</button>
-</div>
-
 <script>
 
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
+// pitch click
 document.getElementById("pitch").onclick = function(e){
 
   const rect = e.target.getBoundingClientRect();
@@ -204,17 +169,6 @@ function updateScore(){
 function updateOpp(){
   document.getElementById("oppScore").innerText =
     "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
-}
-
-function showStats(){
-  document.getElementById("stats").style.display="block";
-  document.getElementById("output").innerText =
-`Own: ${score.g}-${score.p + score.two*2}
-Opp: ${oppScore.g}-${oppScore.p + oppScore.two*2}`;
-}
-
-function back(){
-  document.getElementById("stats").style.display="none";
 }
 
 </script>
