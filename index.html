@@ -1,12 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>GAA Stats App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GAA Stats App</title>
+  <style>
+    body { font-family: Arial; padding: 10px; }
+    button, select, input { margin: 5px; padding: 10px; }
+    .pitch { height: 200px; background: green; color: white; text-align: center; padding-top: 80px; }
+  </style>
 </head>
 
 <body>
-<h2>✅ Your app is ready for deployment</h2>
-<p>This confirms Vercel is working.</p>
+
+<h2 id="teams"></h2>
+
+<div id="setup">
+  <input id="home" placeholder="Home Team"><br>
+  <input id="away" placeholder="Opponent"><br>
+
+  <h3>Lineup</h3>
+  <div id="players"></div>
+
+  <button onclick="startMatch()">Start Match</button>
+</div>
+
+<div id="match" style="display:none">
+
+  <h3 id="score">0-0</h3>
+
+  <select id="playerSelect"></select>
+
+  <div class="pitch" onclick="addEvent('point')">
+    Tap for point
+  </div>
+
+  <br>
+
+  <button onclick="addEvent('goal')">Goal</button>
+  <button onclick="addEvent('two')">2pt</button>
+  <button onclick="addEvent('turnover')">Turnover</button>
+
+  <br><br>
+
+  <button onclick="saveMatch()">Save Match</button>
+
+</div>
+
+<script>
+
+let lineup = {};
+let events = [];
+let score = {g:0,p:0,two:0};
+
+const playersDiv = document.getElementById("players");
+
+for(let i=1;i<=15;i++){
+  playersDiv.innerHTML += `<input placeholder="#${i}" id="p${i}"><br>`;
+}
+
+function startMatch(){
+  const home = document.getElementById("home").value;
+  const away = document.getElementById("away").value;
+
+  document.getElementById("teams").innerText = home + " vs " + away;
+
+  const select = document.getElementById("playerSelect");
+  select.innerHTML = "";
+
+  for(let i=1;i<=15;i++){
+    const name = document.getElementById("p"+i).value;
+    if(name){
+      lineup[i] = name;
+      select.innerHTML += `<option value="${i}">${i} - ${name}</option>`;
+    }
+  }
+
+  document.getElementById("setup").style.display="none";
+  document.getElementById("match").style.display="block";
+}
+
+function addEvent(type){
+  const jersey = document.getElementById("playerSelect").value;
+
+  if(type==="point") score.p++;
+  if(type==="goal") score.g++;
+  if(type==="two") score.two++;
+
+  document.getElementById("score").innerText =
+    score.g + "-" + (score.p + score.two*2);
+
+  events.push({player: lineup[jersey], type: type});
+}
+
+function saveMatch(){
+  alert("Match saved ✅");
+  location.reload();
+}
+
+</script>
+
 </body>
 </html>
+``
