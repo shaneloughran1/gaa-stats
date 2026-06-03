@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>GAA Match Stats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+viewport" content="width=device-width, initial-scale=1"><head>
 
   <style>
     body { font-family: Arial; padding: 10px; }
@@ -74,20 +72,7 @@
   <button onclick="startSub()">SUB</button>
   <h4 id="selected"></h4>
 
-  <div id="pitch" onclick="logShot(event)">
-    <div class="line" style="top:0;"></div>
-    <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
-    <div class="box" style="top:0;left:25%;width:50%;height:15%;"></div>
-    <div class="line" style="top:15%;"></div>
-    <div class="line" style="top:25%;"></div>
-
-    <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <path d="M5,0 Q50,80 95,0" stroke="white" stroke-width="1.5" fill="none"/>
-    </svg>
-
-    <div class="line" style="top:70%;"></div>
-    <div class="line" style="top:88%;"></div>
-  </div>
+  <div id="pitch"></div>
 
   <h3>Home</h3>
   <div class="grid3">
@@ -146,7 +131,7 @@ let time=0;
 let running=false;
 let interval;
 
-// ✅ SUB SYSTEM
+// ✅ SUB SYSTEM FIXED
 let subMode = false;
 let subOff = null;
 
@@ -154,7 +139,6 @@ let subOff = null;
 for(let i=1;i<=15;i++){
   players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
 }
-
 for(let i=16;i<=30;i++){
   subs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
 }
@@ -203,7 +187,7 @@ function getTime(){
   return half+" "+m+":"+s;
 }
 
-// ✅ SUB FLOW
+// ✅ SUB FLOW FIXED
 function startSub(){
   subMode=true;
   subOff=null;
@@ -212,30 +196,47 @@ function startSub(){
 
 function selectPlayer(n){
 
+  // ✅ ALLOW selecting disabled buttons in sub mode
   if(subMode){
 
     if(!subOff){
-      subOff=n;
-      last.innerText="🔁 Select player ON";
+      subOff = n;
+      last.innerText = "🔁 Select player ON";
       return;
     }
 
-    let subOn=n;
+    let subOn = n;
 
-    let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
-    let onBtn=document.querySelector(`button[onclick="selectPlayer(${subOn})"]`);
+    if(subOff == subOn){
+      last.innerText = "❌ Cannot sub same player";
+      return;
+    }
 
-    if(offBtn){ offBtn.disabled=true; offBtn.style.background="#ccc"; }
-    if(onBtn){ onBtn.disabled=false; onBtn.style.background=""; }
+    let offBtn = document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+    let onBtn = document.querySelector(`button[onclick="selectPlayer(${subOn})"]`);
 
-    last.innerText=`🔁 ${getTime()} – #${subOff} OFF → #${subOn} ON`;
+    if(offBtn){
+      offBtn.disabled = true;
+      offBtn.style.background = "#ccc";
+    }
+
+    if(onBtn){
+      onBtn.disabled = false;
+      onBtn.style.background = "";
+    }
+
+    last.innerText = `🔁 ${getTime()} – #${subOff} OFF → #${subOn} ON`;
 
     subMode=false;
+    subOff=null;
     return;
   }
 
+  let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+  if(btn && btn.disabled) return;
+
   selected=n;
-  selectedDisplay.innerText="#"+n+" - "+lineup[n];
+  document.getElementById("selected").innerText = "#" + n + " - " + lineup[n];
 }
 
 // HOME SCORE
@@ -282,13 +283,12 @@ function opp(type){
 }
 
 function updateScore(){
-  score.innerText =
+  document.getElementById("score").innerText =
     home.value+": "+score.g+"-"+(score.p+score.two*2)
     +" | "+
     away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
 }
 
-// SUMMARY (unchanged logic)
 function updateSummary(){
   let totalKO=stats.koWon+stats.koLost;
   let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
@@ -313,7 +313,6 @@ function updateSummary(){
     "KO Won: "+stats.koWon+"<br>"+
     "KO Lost: "+stats.koLost+"<br>"+
     "KO %: "+koPerc+"%<br><br>"+
-
     "<b>Top Scorers</b><br>"+list;
 }
 
@@ -321,3 +320,4 @@ function updateSummary(){
 
 </body>
 </html>
+  <title>GAA Match Stats</title>
