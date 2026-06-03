@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAA Half Pitch (Corrected)</title>
+<title>GAA Half Pitch Correct Arc</title>
 
 <style>
 body { font-family: Arial; padding: 10px; }
@@ -10,7 +10,7 @@ button { margin: 5px; padding: 10px; }
 
 /* PITCH */
 .pitch {
-  height: 380px;
+  height: 420px;
   width: 100%;
   background: #2e7d32;
   position: relative;
@@ -49,7 +49,7 @@ button { margin: 5px; padding: 10px; }
   border:2px solid white;
 }
 
-/* LARGE BOX (13m area) */
+/* LARGE BOX */
 .large-box {
   position:absolute;
   top:0;
@@ -59,7 +59,7 @@ button { margin: 5px; padding: 10px; }
   border:2px solid white;
 }
 
-/* ✅ 13m LINE */
+/* 13m */
 .line13 {
   position:absolute;
   top:15%;
@@ -68,54 +68,32 @@ button { margin: 5px; padding: 10px; }
   background:white;
 }
 
-/* ✅ 21m LINE */
+/* ✅ 21m LINE (IMPORTANT REFERENCE) */
 .line21 {
   position:absolute;
-  top:22%;
+  top:25%;
   width:100%;
   height:2px;
   background:white;
 }
 
-/* ✅ INNER ARC (21m) */
-.arc21 {
+/* ✅ TRUE ARC (BASED ON CIRCLE — MATCHES YOUR DRAWING) */
+.arc-main {
   position:absolute;
-  top:22%;
+  top:25%;
   left:50%;
-  width:38%;
-  height:60px;           /* flatter */
+  width:90%;          /* reaches close to sidelines */
+  height:260px;       /* deep curve */
   border:2px solid white;
   border-top:none;
-  border-radius:0 0 50% 50% / 0 0 100% 100%;
+  border-radius:0 0 50% 50%;
   transform:translateX(-50%);
 }
 
-/* ✅ OUTER 2PT ARC */
-.arc2pt {
-  position:absolute;
-  top:22%;
-  left:50%;
-  width:75%;
-  height:90px;           /* flatter */
-  border:2px solid white;
-  border-top:none;
-  border-radius:0 0 50% 50% / 0 0 100% 100%;
-  transform:translateX(-50%);
-}
-
-/* ✅ CRITICAL FIX: 45 CLOSE TO ARC */
+/* ✅ 45m LINE (CLEARLY BELOW ARC) */
 .line45 {
   position:absolute;
-  top:38%;               /* moved UP significantly */
-  width:100%;
-  height:2px;
-  background:white;
-}
-
-/* ✅ 65m */
-.line65 {
-  position:absolute;
-  top:60%;
+  top:78%;
   width:100%;
   height:2px;
   background:white;
@@ -149,11 +127,10 @@ button { margin: 5px; padding: 10px; }
   <div class="line13"></div>
   <div class="line21"></div>
 
-  <div class="arc21"></div>
-  <div class="arc2pt"></div>
+  <!-- ✅ CORRECT ARC -->
+  <div class="arc-main"></div>
 
   <div class="line45"></div>
-  <div class="line65"></div>
 
 </div>
 
@@ -180,7 +157,6 @@ button { margin: 5px; padding: 10px; }
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// click pitch
 document.getElementById("pitch").onclick = function(e){
 
   const rect = e.target.getBoundingClientRect();
@@ -204,7 +180,6 @@ document.getElementById("pitch").onclick = function(e){
   }
 };
 
-// scoring
 function addScore(type){
   if(type==="point") score.p++;
   if(type==="goal") score.g++;
@@ -219,7 +194,6 @@ function addOppScore(type){
   updateOpp();
 }
 
-// display
 function updateScore(){
   document.getElementById("score").innerText =
     score.g + "-" + (score.p + score.two*2);
@@ -227,7 +201,7 @@ function updateScore(){
 
 function updateOpp(){
   document.getElementById("oppScore").innerText =
-    "Opp: " + oppScore.g + "-" + (oppScore.p + score.two*2);
+    "Opp: " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
 }
 
 </script>
