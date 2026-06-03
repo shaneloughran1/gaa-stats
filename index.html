@@ -58,20 +58,16 @@
 
 <div id="match" style="display:none;">
 
-  <!-- SCORE -->
   <div id="score" style="font-weight:bold; float:right;"></div>
 
-  <!-- TIMER -->
   <h2 id="timer">00:00</h2>
   <button onclick="start()">Start</button>
   <button onclick="pause()">Pause</button>
 
-  <!-- PLAYER SELECT -->
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
   <h4 id="selected"></h4>
 
-  <!-- ✅ PITCH -->
   <div id="pitch" onclick="logShot(event)">
     <div class="line" style="top:0;"></div>
     <div class="box" style="top:0;left:36%;width:28%;height:10%;"></div>
@@ -81,19 +77,15 @@
     <div class="line" style="top:25%;"></div>
 
     <svg style="position:absolute; top:25%; left:0; width:100%; height:55%;"
-         viewBox="0 0 100 100"
-         preserveAspectRatio="none">
+         viewBox="0 0 100 100" preserveAspectRatio="none">
       <path d="M5,0 Q50,80 95,0"
-            stroke="white"
-            stroke-width="1.5"
-            fill="none"/>
+            stroke="white" stroke-width="1.5" fill="none"/>
     </svg>
 
     <div class="line" style="top:70%;"></div>
     <div class="line" style="top:88%;"></div>
   </div>
 
-  <!-- HOME -->
   <h3>Home</h3>
   <div class="grid3">
     <button onclick="add('Goal')">Goal</button>
@@ -101,14 +93,12 @@
     <button onclick="add('Point')">1PT</button>
   </div>
 
-  <!-- ✅ KICKOUT SECTION -->
   <h3>Kickouts</h3>
   <div class="grid2">
     <button onclick="kickout('won')">KO Won</button>
     <button onclick="kickout('lost')">KO Lost</button>
   </div>
 
-  <!-- OPP -->
   <h3>Opposition</h3>
   <div class="grid3">
     <button onclick="opp('Goal')">Goal</button>
@@ -116,20 +106,18 @@
     <button onclick="opp('Point')">1PT</button>
   </div>
 
-  <!-- QUICK EVENTS -->
   <h3>Quick Events</h3>
   <div class="grid3">
     <button onclick="quick('Won Ball')">Won Ball</button>
     <button onclick="quick('Lost Ball')">Lost Ball</button>
     <button onclick="quick('Mark')">Mark</button>
-    <button onclick="quick('Miss')">Miss</button>
+    <button onclick="wide()">Wide</button>
     <button onclick="quick('Foul Won')">Foul Won</button>
     <button onclick="quick('Foul Conceded')">Foul</button>
   </div>
 
   <button onclick="undo()">Undo</button>
 
-  <!-- ✅ SUMMARY -->
   <h3>Match Summary</h3>
   <div id="summary"></div>
 
@@ -139,182 +127,114 @@
 
 <script>
 
-let lineup = {};
-let selected = "";
-let time = 0;
-let running = false;
+let lineup={};
+let selected="";
+let time=0;
+let running=false;
 let timer;
 
-let score = {g:0,p:0,two:0};
-let oppScore = {g:0,p:0,two:0};
+let score={g:0,p:0,two:0};
+let oppScore={g:0,p:0,two:0};
 
-let stats = {
-  shots:0,
-  quick:0,
-  koWon:0,
-  koLost:0
-};
+let stats={shots:0,quick:0,koWon:0,koLost:0,wides:0};
 
-let lastEvent = null;
+let lastEvent=null;
 
-// PLAYERS
-const playersDiv = document.getElementById("players");
-
-for (let i=1;i<=15;i++){
-  playersDiv.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}] = this.value"><br>`;
+for(let i=1;i<=15;i++){
+  players.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
 }
 
-// START
 function startMatch(){
-  document.getElementById("match").style.display = "block";
+  match.style.display="block";
 
-  document.getElementById("playerButtons").innerHTML =
-    Object.keys(lineup).map(n =>
-      `<button id="p${n}" onclick="selectPlayer(${n})">${n}</button>`
-    ).join("");
+  playerButtons.innerHTML=Object.keys(lineup).map(n=>
+    `<button onclick="selected=${n}">${n}</button>`
+  ).join("");
 
   updateScore();
   updateSummary();
 }
 
-// SELECT PLAYER
-function selectPlayer(n){
-  selected = n;
-
-  document.getElementById("selected").innerText =
-    "Selected: #" + n + " - " + lineup[n];
-}
-
-// HOME SCORING
 function add(type){
-  if(!selected) return;
+  if(!selected)return;
 
-  if(type==="Goal"){ score.g++; stats.shots++; }
-  if(type==="2pt"){ score.two++; stats.shots++; }
-  if(type==="Point"){ score.p++; stats.shots++; }
+  if(type==="Goal"){score.g++;stats.shots++;}
+  if(type==="2pt"){score.two++;stats.shots++;}
+  if(type==="Point"){score.p++;stats.shots++;}
 
-  lastEvent = {type, team:"home"};
+  lastEvent={type,team:"home"};
+  last.innerText="✅ "+lineup[selected]+" - "+type;
 
-  document.getElementById("last").innerText =
-    "✅ " + lineup[selected] + " - " + type;
+  updateScore();updateSummary();
+}
 
-  updateScore();
+function wide(){
+  stats.wides++;
+  last.innerText="⚪ Wide";
+  lastEvent={type:"wide",team:"wide"};
   updateSummary();
 }
 
-// ✅ KICKOUTS
-function kickout(type){
-
-  if(type==="won") stats.koWon++;
-  if(type==="lost") stats.koLost++;
-
-  let label = selected && lineup[selected]
-    ? lineup[selected] + " - KO " + type
-    : "Team - KO " + type;
-
-  document.getElementById("last").innerText =
-    "⚪ " + label;
-
-  lastEvent = {type, team:"ko"};
-
-  updateSummary();
-}
-
-// OPP
-function opp(type){
-  if(type==="Goal") oppScore.g++;
-  if(type==="2pt") oppScore.two++;
-  if(type==="Point") oppScore.p++;
-
-  lastEvent = {type, team:"opp"};
-
-  document.getElementById("last").innerText =
-    "🔴 Opp - " + type;
-
-  updateScore();
-  updateSummary();
-}
-
-// QUICK
 function quick(type){
   stats.quick++;
-
-  document.getElementById("last").innerText =
-    "⚡ " + type;
-
-  lastEvent = {type, team:"quick"};
-
+  last.innerText="⚡ "+type;
+  lastEvent={type,team:"quick"};
   updateSummary();
 }
 
-// UNDO
-function undo(){
-  if(!lastEvent) return;
+function kickout(t){
+  if(t==="won")stats.koWon++;
+  if(t==="lost")stats.koLost++;
+  last.innerText="⚪ KO "+t;
+  lastEvent={type:t,team:"ko"};
+  updateSummary();
+}
 
-  if(lastEvent.team==="ko"){
-    if(lastEvent.type==="won") stats.koWon--;
-    if(lastEvent.type==="lost") stats.koLost--;
+function opp(type){
+  if(type==="Goal")oppScore.g++;
+  if(type==="2pt")oppScore.two++;
+  if(type==="Point")oppScore.p++;
+  last.innerText="🔴 Opp - "+type;
+  lastEvent={type,team:"opp"};
+  updateScore();updateSummary();
+}
+
+function undo(){
+  if(!lastEvent)return;
+
+  if(lastEvent.team==="home"){
+    if(lastEvent.type==="Goal"){score.g--;stats.shots--;}
+    if(lastEvent.type==="2pt"){score.two--;stats.shots--;}
+    if(lastEvent.type==="Point"){score.p--;stats.shots--;}
   }
 
-  updateSummary();
+  if(lastEvent.team==="wide"){
+    stats.wides--;
+  }
+
+  updateScore();updateSummary();
 }
 
-// SCORE
 function updateScore(){
-  score.textContent =
-    home.value + ": " + score.g + "-" + (score.p + score.two*2)
-    + " | " +
-    away.value + ": " + oppScore.g + "-" + (oppScore.p + oppScore.two*2);
+  scoreDiv=document.getElementById("score");
+  scoreDiv.textContent=
+    home.value+": "+score.g+"-"+(score.p+score.two*2)+
+    " | "+away.value+": "+oppScore.g+"-"+(oppScore.p+oppScore.two*2);
 }
 
-// SUMMARY
 function updateSummary(){
+  let totalKO=stats.koWon+stats.koLost;
+  let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
 
-  let totalKO = stats.koWon + stats.koLost;
-  let koPerc = totalKO ? ((stats.koWon/totalKO)*100).toFixed(1) : 0;
-
-  document.getElementById("summary").innerHTML =
-    "Shots: " + stats.shots + "<br>" +
-    "Goals: " + score.g + "<br>" +
-    "Points: " + score.p + "<br>" +
-    "2PT: " + score.two + "<br><br>" +
-    "Kickouts Won: " + stats.koWon + "<br>" +
-    "Kickouts Lost: " + stats.koLost + "<br>" +
-    "KO %: " + koPerc + "%<br><br>" +
-    "Quick Events: " + stats.quick;
-}
-
-// TIMER
-function start(){
-  if(running) return;
-  running=true;
-  timer=setInterval(()=>{
-    time++;
-    let m=Math.floor(time/60).toString().padStart(2,"0");
-    let s=(time%60).toString().padStart(2,"0");
-    document.getElementById("timer").innerText=m+":"+s;
-  },1000);
-}
-
-function pause(){
-  running=false;
-  clearInterval(timer);
-}
-
-// DOTS
-function logShot(e){
-  if(!selected) return;
-
-  let rect = pitch.getBoundingClientRect();
-  let x = e.clientX - rect.left;
-  let y = e.clientY - rect.top;
-
-  let dot = document.createElement("div");
-  dot.className="dot";
-  dot.style.left=x+"px";
-  dot.style.top=y+"px";
-
-  pitch.appendChild(dot);
+  summary.innerHTML=
+    "Shots: "+stats.shots+"<br>"+
+    "Goals: "+score.g+"<br>"+
+    "Points: "+score.p+"<br>"+
+    "2PT: "+score.two+"<br>"+
+    "Wides: "+stats.wides+"<br><br>"+
+    "KO Won: "+stats.koWon+"<br>"+
+    "KO Lost: "+stats.koLost+"<br>"+
+    "KO %: "+koPerc+"%";
 }
 
 </script>
