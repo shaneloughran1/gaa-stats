@@ -130,16 +130,16 @@
 let lineup = {};
 let selected = "";
 
-// ✅ scores
+// SCORES
 let score = {g:0,p:0,two:0};
 let oppScore = {g:0,p:0,two:0};
 
-// ✅ stats
+// STATS
 let stats = {shots:0,wides:0,koWon:0,koLost:0};
 let stats1 = {shots:0,wides:0,koWon:0,koLost:0};
 let stats2 = {shots:0,wides:0,koWon:0,koLost:0};
 
-// ✅ player scoring (BACK)
+// ✅ PLAYER STATS
 let playerStats = {};
 
 let half="1st Half";
@@ -205,7 +205,7 @@ function selectPlayer(n){
   selectedDisplay.innerText="#"+n+" - "+lineup[n];
 }
 
-/* ✅ HOME (with player tracking) */
+/* HOME */
 function add(type){
   if(!selected)return;
 
@@ -248,7 +248,6 @@ function kickout(type){
 /* WIDE */
 function wide(){
   let h=currentHalfStats();
-
   stats.wides++; h.wides++;
 
   last.innerText=`⚪ ${getTimeStamp()} – Wide`;
@@ -265,23 +264,37 @@ function opp(type){
   updateScore();
 }
 
-/* ✅ SUMMARY (WITH SCORERS ADDED BACK) */
+/* ✅ SUMMARY (FIXED 2PT DISPLAY) */
 function updateSummary(){
 
   let totalKO=stats.koWon+stats.koLost;
   let koPerc=totalKO?((stats.koWon/totalKO)*100).toFixed(1):0;
 
-  // ✅ build scorers
   let scorers = Object.entries(playerStats).map(([num,s])=>{
     let total = s.g*3 + s.p + s.two*2;
-    return {name:lineup[num], g:s.g, p:s.p, total};
+
+    return {
+      name: lineup[num],
+      g: s.g,
+      p: s.p,
+      two: s.two,
+      total
+    };
   });
 
   scorers.sort((a,b)=>b.total-a.total);
 
-  let scorerList = scorers.map(p =>
-    `${p.name} – ${p.g}-${p.p} (${p.total})`
-  ).join("<br>");
+  let scorerList = scorers.map(p => {
+
+    let scoreLine = `${p.g}-${p.p}`;
+    
+    if(p.two > 0){
+      scoreLine += ` (${p.two}x2pt)`;
+    }
+
+    return `${p.name} – ${scoreLine} (${p.total})`;
+
+  }).join("<br>");
 
   summary.innerHTML=
     "<b>Overall</b><br>"+
