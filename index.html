@@ -7,31 +7,27 @@
 <style>
 body { font-family: Arial; padding:10px; }
 
+/* ✅ SIDE BY SIDE PLAYER PANELS */
 .row { display:flex; gap:20px; }
 .column { flex:1; }
 
-input { width:100%; margin:2px 0; }
+/* ✅ INPUTS NOW HALF WIDTH */
+input {
+  width:45%;
+  margin:2px 0;
+  padding:4px;
+}
 
 button { padding:8px; margin:3px; }
 
-.grid3 {display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
-.grid2 {display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-
-#pitch {
- width:100%; height:420px; background:#2e7d32;
- position:relative;
- border-left:2px solid white;
- border-right:2px solid white;
- border-top:2px solid white;
-}
-
-.line{position:absolute;width:100%;height:2px;background:white;}
-.box{position:absolute;border:2px solid white;}
-.dot{position:absolute;width:8px;height:8px;border-radius:50%;background:red;}
+.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 
 #timeline {
- max-height:200px; overflow-y:auto;
- border:1px solid #ccc; padding:6px;
+ max-height:200px;
+ overflow-y:auto;
+ border:1px solid #ccc;
+ padding:6px;
 }
 </style>
 </head>
@@ -47,12 +43,12 @@ button { padding:8px; margin:3px; }
 
 <div class="column">
 <h3 id="homeTitle">Home Players</h3>
-<div id="homePlayers"></div>
+<div id="homeInputs"></div>
 </div>
 
 <div class="column">
 <h3 id="awayTitle">Opp Players</h3>
-<div id="awayPlayers"></div>
+<div id="awayInputs"></div>
 </div>
 
 </div>
@@ -64,26 +60,20 @@ button { padding:8px; margin:3px; }
 <div id="match" style="display:none;">
 
 <h2 id="score">0-0 | 0-0</h2>
+<h3 id="timer">1st Half – 00:00</h3>
 
+<button onclick="startTimer()">Start</button>
+<button onclick="pauseTimer()">Pause</button>
+<button onclick="secondHalf()">2nd Half</button>
 <button onclick="endMatch()" style="background:red;color:white;">END MATCH</button>
 
-<h3>Pitch</h3>
-<div id="pitch" onclick="logShot(event)">
+<h3>Select Player</h3>
+<div id="playerButtons"></div>
+<button onclick="startSub()">SUB</button>
 
-<div class="line" style="top:0;"></div>
-<div class="box" style="top:0;left:40%;width:20%;height:8%;"></div>
-<div class="box" style="top:0;left:25%;width:50%;height:16%;"></div>
-<div class="line" style="top:22%;"></div>
-
-<!-- ✅ ARC FIXED FINAL -->
-<svg style="position:absolute; top:22%; left:10%; width:80%; height:25%;">
- <path d="M0,0 Q50,50 100,0"
- stroke="white" stroke-width="2" fill="none"/>
-</svg>
-
-<div class="line" style="top:42%;"></div>
-
-</div>
+<h3>Select Opp Player</h3>
+<div id="oppButtons"></div>
+<button onclick="startOppSub()">OPP SUB</button>
 
 <h3>Home</h3>
 <div class="grid3">
@@ -93,7 +83,7 @@ button { padding:8px; margin:3px; }
 <button onclick="addWide()">Wide</button>
 </div>
 
-<h3>Kickouts</h3>
+<h3>Kickouts (Home)</h3>
 <div class="grid2">
 <button onclick="kickout('won')">KO Won</button>
 <button onclick="kickout('lost')">KO Lost</button>
@@ -107,10 +97,10 @@ button { padding:8px; margin:3px; }
 <button onclick="oppWide()">Wide</button>
 </div>
 
-<h3>Opp Kickouts</h3>
+<h3>Kickouts (Opponent)</h3>
 <div class="grid2">
-<button onclick="oppKickout('won')">Opp KO Won</button>
-<button onclick="oppKickout('lost')">Opp KO Lost</button>
+<button onclick="oppKickout('won')">KO Won</button>
+<button onclick="oppKickout('lost')">KO Lost</button>
 </div>
 
 <h3>Summary</h3>
@@ -123,10 +113,7 @@ button { padding:8px; margin:3px; }
 
 <script>
 
-let matchEnded=false;
-
 let lineup={}, oppLineup={};
-
 let selected="", selectedOpp="";
 
 let playerStats={}, oppPlayerStats={};
@@ -137,66 +124,103 @@ let awayScore={g:0,p:0,two:0};
 let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0,koWon:0,koLost:0};
 
+let time=0, running=false, timerInt;
+let half="1st Half";
+let matchEnded=false;
+
 let subMode=false, subOff=null;
 let oppSubMode=false, oppSubOff=null;
 
-/* BUILD PLAYERS IMMEDIATELY */
+/* ✅ BUILD PLAYER INPUTS */
 for(let i=1;i<=30;i++){
- homePlayers.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}]=this.value">`;
- awayPlayers.innerHTML += `<input placeholder="#${i}" onchange="oppLineup[${i}]=this.value">`;
+ homeInputs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}]=this.value">`;
+ awayInputs.innerHTML += `<input placeholder="#${i}" onchange="oppLineup[${i}]=this.value">`;
 }
 
+/* ✅ HEADERS */
 function updateHeaders(){
  homeTitle.innerText = home.value || "Home Players";
  awayTitle.innerText = away.value || "Opp Players";
 }
 
-/* START MATCH */
+/* ✅ START MATCH */
 function startMatch(){
 
  match.style.display="block";
 
+ let p="", o="";
  for(let i=1;i<=30;i++){
-
   let dis=i>15?"disabled":"";
-
-  playerButtons = playerButtons || document.createElement("div");
-  oppButtons = oppButtons || document.createElement("div");
-
+  p += `<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
+  o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
 
+ playerButtons.innerHTML=p;
+ oppButtons.innerHTML=o;
+
+ updateScore();
+ updateSummary();
 }
 
-/* SUBS FIXED */
-function startSub(){subMode=true;subOff=null;}
-function startOppSub(){oppSubMode=true;oppSubOff=null;}
+/* ✅ TIMER */
+function startTimer(){
+ if(running||matchEnded)return;
+ running=true;
+ timerInt=setInterval(()=>{
+  time++;
+  let m=Math.floor(time/60).toString().padStart(2,"0");
+  let s=(time%60).toString().padStart(2,"0");
+  timer.innerText=half+" – "+m+":"+s;
+ },1000);
+}
+
+function pauseTimer(){ running=false; clearInterval(timerInt); }
+function secondHalf(){ half="2nd Half"; time=0; }
+
+/* ✅ SUBS */
+function startSub(){ subMode=true; subOff=null; }
+function startOppSub(){ oppSubMode=true; oppSubOff=null; }
 
 function selectPlayer(n){
 
+ let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+
  if(subMode){
-  if(!subOff){subOff=n;return;}
+  if(!subOff){ subOff=n; return; }
+  document.querySelector(`button[onclick="selectPlayer(${subOff})"]`).disabled=true;
+  btn.disabled=false;
+  logEvent(`🔁 #${subOff} OFF → #${n} ON`);
   subMode=false;
   return;
  }
+
+ if(btn.disabled||matchEnded) return;
 
  selected=n;
 }
 
 function selectOpp(n){
 
+ let btn=document.querySelector(`button[onclick="selectOpp(${n})"]`);
+
  if(oppSubMode){
-  if(!oppSubOff){oppSubOff=n;return;}
+  if(!oppSubOff){ oppSubOff=n; return; }
+  document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`).disabled=true;
+  btn.disabled=false;
+  logEvent(`🔁 Opp #${oppSubOff} OFF → #${n} ON`);
   oppSubMode=false;
   return;
  }
 
+ if(btn.disabled||matchEnded) return;
+
  selectedOpp=n;
 }
 
-/* ✅ SCORING FIXED */
+/* ✅ SCORING */
 function addScore(type){
 
- if(matchEnded||!selected) return;
+ if(matchEnded||!selected)return;
 
  if(!playerStats[selected]) playerStats[selected]={g:0,p:0,two:0};
 
@@ -213,7 +237,7 @@ function addScore(type){
 
 function oppScore(type){
 
- if(matchEnded||!selectedOpp) return;
+ if(matchEnded||!selectedOpp)return;
 
  if(!oppPlayerStats[selectedOpp]) oppPlayerStats[selectedOpp]={g:0,p:0,two:0};
 
@@ -223,35 +247,27 @@ function oppScore(type){
 
  logEvent(`🔴 ${(oppLineup[selectedOpp]||"#"+selectedOpp)} – ${type}`);
 
+ selectedOpp="";
  updateScore(); updateSummary();
 }
 
-function addWide(){stats.wides++; stats.shots++; updateSummary();}
-function oppWide(){oppStats.wides++; updateSummary();}
+/* ✅ OTHER EVENTS */
+function addWide(){ stats.wides++; stats.shots++; logEvent("⚪ Wide"); updateSummary(); }
+function oppWide(){ oppStats.wides++; logEvent("🔴 Opp Wide"); updateSummary(); }
 
-function kickout(t){if(t==="won")stats.koWon++; else stats.koLost++; updateSummary();}
-function oppKickout(t){if(t==="won")oppStats.koWon++; else oppStats.koLost++; updateSummary();}
-
-/* ✅ SUMMARY FIXED */
-function updateSummary(){
-
- let homeTxt="", oppTxt="";
-
- Object.entries(playerStats).forEach(([n,s])=>{
-  let total=s.g*3+s.p+s.two*2;
-  homeTxt+=`${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
- });
-
- Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  let total=s.g*3+s.p+s.two*2;
-  oppTxt+=`${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
- });
-
- summary.innerHTML =
- "<b>HOME</b><br>"+(homeTxt||"None")+"<br><br>"+
- "<b>OPP</b><br>"+(oppTxt||"None");
+function kickout(t){
+ if(t==="won"){ stats.koWon++; logEvent("🟢 KO Won"); }
+ else{ stats.koLost++; logEvent("🔴 KO Lost"); }
+ updateSummary();
 }
 
+function oppKickout(t){
+ if(t==="won"){ oppStats.koWon++; logEvent("🔴 Opp KO Won"); }
+ else{ oppStats.koLost++; logEvent("🟢 Opp KO Lost"); }
+ updateSummary();
+}
+
+/* ✅ SCORE DISPLAY */
 function updateScore(){
  score.innerText =
  (home.value||"Home")+": "+homeScore.g+"-"+(homeScore.p+homeScore.two*2)
@@ -259,27 +275,39 @@ function updateScore(){
  (away.value||"Opp")+": "+awayScore.g+"-"+(awayScore.p+awayScore.two*2);
 }
 
-/* TIMELINE */
+/* ✅ SUMMARY */
+function updateSummary(){
+
+ let homeTxt="", oppTxt="";
+
+ Object.entries(playerStats).forEach(([n,s])=>{
+  let total=s.g*3+s.p+s.two*2;
+  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
+ });
+
+ Object.entries(oppPlayerStats).forEach(([n,s])=>{
+  let total=s.g*3+s.p+s.two*2;
+  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
+ });
+
+ summary.innerHTML =
+ "<b>HOME</b><br>"+(homeTxt||"None")+"<br><br>"+
+ "<b>OPP</b><br>"+(oppTxt||"None");
+}
+
+/* ✅ TIMELINE */
 function logEvent(t){
- if(matchEnded)return;
  let d=document.createElement("div");
  d.innerText=t;
  timeline.prepend(d);
 }
 
+/* ✅ END MATCH */
 function endMatch(){
+ if(matchEnded) return;
  matchEnded=true;
- logEvent("FULL TIME – "+score.innerText);
-}
-
-function logShot(e){
- if(matchEnded||!selected)return;
- let r=pitch.getBoundingClientRect();
- let d=document.createElement("div");
- d.className="dot";
- d.style.left=(e.clientX-r.left)+"px";
- d.style.top=(e.clientY-r.top)+"px";
- pitch.appendChild(d);
+ pauseTimer();
+ logEvent("🏁 Full Time – "+score.innerText);
 }
 
 </script>
