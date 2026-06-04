@@ -15,6 +15,12 @@
       gap:8px;
     }
 
+    .grid2 {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
     #pitch {
       width:100%;
       height:420px;
@@ -26,24 +32,12 @@
       margin-top:10px;
     }
 
-    .line {
-      position:absolute;
-      width:100%;
-      height:2px;
-      background:white;
-    }
-
-    .box {
-      position:absolute;
-      border:2px solid white;
-    }
+    .line { position:absolute;width:100%;height:2px;background:white; }
+    .box { position:absolute;border:2px solid white; }
 
     .dot {
       position:absolute;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:red;
+      width:8px;height:8px;border-radius:50%;background:red;
     }
   </style>
 </head>
@@ -74,49 +68,47 @@
 
   <h3>Select Player</h3>
   <div id="playerButtons"></div>
+  <button onclick="startSub()">SUB</button>
+
+  <h3>Select Opp Player (Optional)</h3>
+  <div id="oppButtons"></div>
 
   <h3>Pitch</h3>
   <div id="pitch" onclick="logShot(event)">
 
-    <!-- ✅ END LINE -->
     <div class="line" style="top:0;"></div>
-
-    <!-- ✅ SMALL GOAL BOX -->
     <div class="box" style="top:0;left:40%;width:20%;height:8%;"></div>
-
-    <!-- ✅ LARGE RECTANGLE (13m) -->
     <div class="box" style="top:0;left:25%;width:50%;height:16%;"></div>
-
-    <!-- ✅ 21m LINE -->
     <div class="line" style="top:22%;"></div>
 
-    <!-- ✅ ARC (ENDS TOUCH 21m, DOES NOT TOUCH SIDES) -->
-    <svg style="position:absolute; top:22%; left:10%; width:80%; height:28%;"
-         viewBox="0 0 100 100"
-         preserveAspectRatio="none">
-      <path d="M0,0 Q50,90 100,0"
-            stroke="white"
-            stroke-width="2"
-            fill="none"/>
+    <svg style="position:absolute; top:22%; left:10%; width:80%; height:28%;" viewBox="0 0 100 100">
+      <path d="M0,0 Q50,90 100,0" stroke="white" stroke-width="2" fill="none"/>
     </svg>
 
-    <!-- ✅ 45m LINE -->
     <div class="line" style="top:42%;"></div>
 
   </div>
 
-  <h3>Home Score</h3>
+  <h3>Home</h3>
   <div class="grid3">
     <button onclick="addScore('Goal')">Goal</button>
     <button onclick="addScore('2pt')">2PT</button>
     <button onclick="addScore('Point')">1PT</button>
+    <button onclick="addWide()">Wide</button>
   </div>
 
-  <h3>Opponent Score</h3>
+  <h3>Kickouts</h3>
+  <div class="grid2">
+    <button onclick="kickout('won')">KO Won</button>
+    <button onclick="kickout('lost')">KO Lost</button>
+  </div>
+
+  <h3>Opponent</h3>
   <div class="grid3">
     <button onclick="oppScore('Goal')">Goal</button>
     <button onclick="oppScore('2pt')">2PT</button>
     <button onclick="oppScore('Point')">1PT</button>
+    <button onclick="oppWide()">Wide</button>
   </div>
 
   <h3>Summary</h3>
@@ -130,124 +122,142 @@
 
 let lineup = {};
 let selected = "";
+let selectedOpp = "";
+
+// ✅ SUB LOGIC
+let subMode = false;
+let subOff = null;
+
+// Player stats
+let playerStats = {};
 
 let homeScore = {g:0, p:0, two:0};
 let awayScore = {g:0, p:0, two:0};
 
-let stats = {shots:0};
+let stats = {shots:0, wides:0, koWon:0, koLost:0};
+let oppStats = {wides:0};
 
-let time = 0;
-let running = false;
-let timerInt;
-let half = "1st Half";
+let time=0,running=false,timerInt,half="1st Half";
 
-for(let i=1;i<=15;i++){
-  players.innerHTML +=
-    `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
+/* SETUP */
+for(let i=1;i<=30;i++){
+ players.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
 }
 
+/* START */
 function startMatch(){
-  match.style.display="block";
+ match.style.display="block";
 
-  let btns="";
-  for(let i=1;i<=15;i++){
-    btns += `<button onclick="selectPlayer(${i})">${i}</button>`;
-  }
+ let html="";
+ for(let i=1;i<=30;i++){
+   let disabled = i>15;
+   html += `<button onclick="selectPlayer(${i})" ${disabled?'disabled':''}>${i}</button>`;
+ }
+ playerButtons.innerHTML = html;
 
-  playerButtons.innerHTML = btns;
+ oppButtons.innerHTML=[...Array(15)].map((_,i)=>`<button onclick="selectOpp(${i+1})">${i+1}</button>`).join("");
 
-  updateScore();
-  updateSummary();
+ updateScore();updateSummary();
 }
 
-function startTimer(){
-  if(running) return;
-
-  running=true;
-
-  timerInt = setInterval(()=>{
-    time++;
-
-    let m = Math.floor(time/60).toString().padStart(2,"0");
-    let s = (time%60).toString().padStart(2,"0");
-
-    timer.innerText = half + " – " + m + ":" + s;
-  },1000);
-}
-
-function pauseTimer(){
-  running=false;
-  clearInterval(timerInt);
-}
-
-function secondHalf(){
-  half = "2nd Half";
-  time = 0;
+/* SUB FLOW */
+function startSub(){
+ subMode=true;
+ subOff=null;
+ last.innerText="Select player OFF";
 }
 
 function selectPlayer(n){
-  selected = n;
+
+ if(subMode){
+   if(!subOff){
+     subOff=n;
+     last.innerText="Select player ON";
+     return;
+   }
+
+   if(n===subOff){
+     last.innerText="Cannot sub same player";
+     return;
+   }
+
+   let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+   let onBtn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+
+   if(offBtn){ offBtn.disabled=true; offBtn.style.background="#ccc"; }
+   if(onBtn){ onBtn.disabled=false; }
+
+   last.innerText=`🔁 #${subOff} OFF → #${n} ON`;
+   subMode=false;
+   return;
+ }
+
+ let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+ if(btn && btn.disabled) return;
+
+ selected=n;
 }
 
+function selectOpp(n){ selectedOpp=n; }
+
+/* SCORING */
 function addScore(type){
+ if(!selected)return;
 
-  if(!selected) return;
+ stats.shots++;
 
-  stats.shots++;
+ if(!playerStats[selected]) playerStats[selected]={g:0,p:0,two:0};
 
-  if(type==="Goal") homeScore.g++;
-  if(type==="2pt") homeScore.two++;
-  if(type==="Point") homeScore.p++;
+ if(type==="Goal"){homeScore.g++;playerStats[selected].g++;}
+ if(type==="2pt"){homeScore.two++;playerStats[selected].two++;}
+ if(type==="Point"){homeScore.p++;playerStats[selected].p++;}
 
-  let name = lineup[selected] || "#"+selected;
+ last.innerText=`✅ ${(lineup[selected]||"#"+selected)} - ${type}`;
 
-  last.innerText = "✅ " + name + " - " + type;
-
-  updateScore();
-  updateSummary();
+ updateScore();updateSummary();
 }
+
+function addWide(){stats.wides++;stats.shots++;updateSummary();}
+function kickout(t){if(t==="won")stats.koWon++;else stats.koLost++;updateSummary();}
 
 function oppScore(type){
-
-  if(type==="Goal") awayScore.g++;
-  if(type==="2pt") awayScore.two++;
-  if(type==="Point") awayScore.p++;
-
-  last.innerText = "🔴 Opp - " + type;
-
-  updateScore();
+ if(type==="Goal") awayScore.g++;
+ if(type==="2pt") awayScore.two++;
+ if(type==="Point") awayScore.p++;
+ updateScore();
 }
 
-function updateScore(){
+function oppWide(){oppStats.wides++;updateSummary();}
 
-  score.innerText =
-    home.value + ": " +
-    homeScore.g + "-" + (homeScore.p + homeScore.two*2)
-    + " | " +
-    away.value + ": " +
-    awayScore.g + "-" + (awayScore.p + awayScore.two*2);
+/* DISPLAY */
+function updateScore(){
+ score.innerText=
+ home.value+": "+homeScore.g+"-"+(homeScore.p+homeScore.two*2)+" | "+
+ away.value+": "+awayScore.g+"-"+(awayScore.p+awayScore.two*2);
 }
 
 function updateSummary(){
-  summary.innerText = "Shots: " + stats.shots;
+ let scores = Object.entries(playerStats).map(([n,s])=>{
+  let total=s.g*3+s.p+s.two*2;
+  return `${lineup[n]||"#"+n}: ${total}`;
+ }).join("<br>");
+
+ summary.innerHTML=
+ "Shots: "+stats.shots+"<br>"+
+ "Wides: "+stats.wides+"<br>"+
+ "KO Won: "+stats.koWon+"<br>"+
+ "KO Lost: "+stats.koLost+"<br><br>"+
+ scores;
 }
 
 function logShot(e){
-
-  if(!selected) return;
-
-  let rect = pitch.getBoundingClientRect();
-
-  let x = e.clientX - rect.left;
-  let y = e.clientY - rect.top;
-
-  let dot = document.createElement("div");
-
-  dot.className = "dot";
-  dot.style.left = x + "px";
-  dot.style.top = y + "px";
-
-  pitch.appendChild(dot);
+ if(!selected)return;
+ let r=pitch.getBoundingClientRect();
+ let d=document.createElement("div");
+ d.className="dot";
+ d.style.left=(e.clientX-r.left)+"px";
+ d.style.top=(e.clientY-r.top)+"px";
+ pitch.appendChild(d);
 }
 
 </script>
