@@ -6,7 +6,6 @@
 
 <style>
 body {font-family:Arial;padding:10px;}
-
 .row {display:flex; gap:30px;}
 .column {flex:1;}
 
@@ -37,7 +36,6 @@ button {padding:8px;margin:3px;}
 <body>
 
 <h2>Match Setup</h2>
-
 <input id="home" placeholder="Home Team"><br><br>
 <input id="away" placeholder="Opponent"><br><br>
 
@@ -47,35 +45,35 @@ button {padding:8px;margin:3px;}
 <h3>Home</h3>
 
 <div class="pitch-rows">
-<div class="row1"><input onchange="lineup[1]=this.value" placeholder="#1"></div>
+<div class="row1"><input placeholder="#1" onchange="lineup[1]=this.value"></div>
 
 <div class="row3">
-<input onchange="lineup[2]=this.value" placeholder="#2">
-<input onchange="lineup[3]=this.value" placeholder="#3">
-<input onchange="lineup[4]=this.value" placeholder="#4">
+<input placeholder="#2" onchange="lineup[2]=this.value">
+<input placeholder="#3" onchange="lineup[3]=this.value">
+<input placeholder="#4" onchange="lineup[4]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="lineup[5]=this.value" placeholder="#5">
-<input onchange="lineup[6]=this.value" placeholder="#6">
-<input onchange="lineup[7]=this.value" placeholder="#7">
+<input placeholder="#5" onchange="lineup[5]=this.value">
+<input placeholder="#6" onchange="lineup[6]=this.value">
+<input placeholder="#7" onchange="lineup[7]=this.value">
 </div>
 
 <div class="row2">
-<input onchange="lineup[8]=this.value" placeholder="#8">
-<input onchange="lineup[9]=this.value" placeholder="#9">
+<input placeholder="#8" onchange="lineup[8]=this.value">
+<input placeholder="#9" onchange="lineup[9]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="lineup[10]=this.value" placeholder="#10">
-<input onchange="lineup[11]=this.value" placeholder="#11">
-<input onchange="lineup[12]=this.value" placeholder="#12">
+<input placeholder="#10" onchange="lineup[10]=this.value">
+<input placeholder="#11" onchange="lineup[11]=this.value">
+<input placeholder="#12" onchange="lineup[12]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="lineup[13]=this.value" placeholder="#13">
-<input onchange="lineup[14]=this.value" placeholder="#14">
-<input onchange="lineup[15]=this.value" placeholder="#15">
+<input placeholder="#13" onchange="lineup[13]=this.value">
+<input placeholder="#14" onchange="lineup[14]=this.value">
+<input placeholder="#15" onchange="lineup[15]=this.value">
 </div>
 </div>
 
@@ -85,39 +83,38 @@ button {padding:8px;margin:3px;}
 </div>
 
 <div class="column">
-
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
-<div class="row1"><input onchange="oppLineup[1]=this.value" placeholder="#1"></div>
+<div class="row1"><input placeholder="#1" onchange="oppLineup[1]=this.value"></div>
 
 <div class="row3">
-<input onchange="oppLineup[2]=this.value" placeholder="#2">
-<input onchange="oppLineup[3]=this.value" placeholder="#3">
-<input onchange="oppLineup[4]=this.value" placeholder="#4">
+<input placeholder="#2" onchange="oppLineup[2]=this.value">
+<input placeholder="#3" onchange="oppLineup[3]=this.value">
+<input placeholder="#4" onchange="oppLineup[4]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="oppLineup[5]=this.value" placeholder="#5">
-<input onchange="oppLineup[6]=this.value" placeholder="#6">
-<input onchange="oppLineup[7]=this.value" placeholder="#7">
+<input placeholder="#5" onchange="oppLineup[5]=this.value">
+<input placeholder="#6" onchange="oppLineup[6]=this.value">
+<input placeholder="#7" onchange="oppLineup[7]=this.value">
 </div>
 
 <div class="row2">
-<input onchange="oppLineup[8]=this.value" placeholder="#8">
-<input onchange="oppLineup[9]=this.value" placeholder="#9">
+<input placeholder="#8" onchange="oppLineup[8]=this.value">
+<input placeholder="#9" onchange="oppLineup[9]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="oppLineup[10]=this.value" placeholder="#10">
-<input onchange="oppLineup[11]=this.value" placeholder="#11">
-<input onchange="oppLineup[12]=this.value" placeholder="#12">
+<input placeholder="#10" onchange="oppLineup[10]=this.value">
+<input placeholder="#11" onchange="oppLineup[11]=this.value">
+<input placeholder="#12" onchange="oppLineup[12]=this.value">
 </div>
 
 <div class="row3">
-<input onchange="oppLineup[13]=this.value" placeholder="#13">
-<input onchange="oppLineup[14]=this.value" placeholder="#14">
-<input onchange="oppLineup[15]=this.value" placeholder="#15">
+<input placeholder="#13" onchange="oppLineup[13]=this.value">
+<input placeholder="#14" onchange="oppLineup[14]=this.value">
+<input placeholder="#15" onchange="oppLineup[15]=this.value">
 </div>
 </div>
 
@@ -184,8 +181,6 @@ button {padding:8px;margin:3px;}
 
 <script>
 
-/* ✅ FULL SYSTEM RETAINED + SUB FIX ONLY */
-
 let lineup={},oppLineup={};
 let selected="",selectedOpp="";
 
@@ -200,60 +195,41 @@ let oppStats={wides:0,koWon:0,koLost:0};
 let firstHalf={shots:0,scores:0,wides:0};
 let secondHalfStats={shots:0,scores:0,wides:0};
 
-let time=0,running=false,timerInt,half="1st Half";
-
-/* ✅ SUB STATE */
 let subMode=false,subOff=null;
 let oppSubMode=false,oppSubOff=null;
 
-/* build subs */
+let time=0,running=false,timerInt,half="1st Half";
+
+/* subs */
 for(let i=16;i<=30;i++){
- homeSubs.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value">`;
- awaySubs.innerHTML+=`<input placeholder="#${i}" onchange="oppLineup[${i}]=this.value">`;
+ homeSubs.innerHTML+=`<input placeholder="#${i}">`;
+ awaySubs.innerHTML+=`<input placeholder="#${i}">`;
 }
 
 function startMatch(){
  match.style.display="block";
-
  let p="",o="";
  for(let i=1;i<=30;i++){
   let dis=i>15?"disabled":"";
   p+=`<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
   o+=`<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
-
  playerButtons.innerHTML=p;
  oppButtons.innerHTML=o;
-
  updateScore();updateSummary();
 }
 
-/* ✅ FIXED SUB LOGIC */
-function startSub(){
- subMode=true;
- subOff=null;
-}
-
-function startOppSub(){
- oppSubMode=true;
- oppSubOff=null;
-}
+/* ✅ SUB FIX */
+function startSub(){subMode=true;subOff=null;}
+function startOppSub(){oppSubMode=true;oppSubOff=null;}
 
 function selectPlayer(n){
-
  let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
 
  if(subMode){
-  if(subOff===null){
-    subOff=n;
-    return;
-  }
-
-  let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
-
-  offBtn.disabled=true;
+  if(subOff===null){subOff=n;return;}
+  document.querySelector(`button[onclick="selectPlayer(${subOff})"]`).disabled=true;
   btn.disabled=false;
-
   subMode=false;
   subOff=null;
   return;
@@ -264,20 +240,12 @@ function selectPlayer(n){
 }
 
 function selectOpp(n){
-
  let btn=document.querySelector(`button[onclick="selectOpp(${n})"]`);
 
  if(oppSubMode){
-  if(oppSubOff===null){
-    oppSubOff=n;
-    return;
-  }
-
-  let offBtn=document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`);
-
-  offBtn.disabled=true;
+  if(oppSubOff===null){oppSubOff=n;return;}
+  document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`).disabled=true;
   btn.disabled=false;
-
   oppSubMode=false;
   oppSubOff=null;
   return;
@@ -287,20 +255,7 @@ function selectOpp(n){
  selectedOpp=n;
 }
 
-/* ✅ EVERYTHING ELSE UNCHANGED BELOW */
-
-function startTimer(){
- if(running)return;
- running=true;
- timerInt=setInterval(()=>{
-  time++;
-  timer.innerText=half+" – "+("0"+Math.floor(time/60)).slice(-2)+":"+("0"+time%60).slice(-2);
- },1000);
-}
-
-function pauseTimer(){running=false;clearInterval(timerInt);}
-function secondHalf(){half="2nd Half";time=0;}
-
+/* scoring */
 function addScore(t){
  if(!selected)return;
 
@@ -311,16 +266,14 @@ function addScore(t){
  if(t==="2pt"){homeScore.two++;playerStats[selected].two++;}
 
  stats.shots++;
-
- if(half==="1st Half"){firstHalf.shots++;firstHalf.scores++;}
- else{secondHalfStats.shots++;secondHalfStats.scores++;}
+ if(half==="1st Half"){firstHalf.scores++;firstHalf.shots++;}
+ else{secondHalfStats.scores++;secondHalfStats.shots++;}
 
  updateScore();updateSummary();
 }
 
 function addWide(){
  stats.wides++;stats.shots++;
-
  if(half==="1st Half"){firstHalf.wides++;firstHalf.shots++;}
  else{secondHalfStats.wides++;secondHalfStats.shots++;}
 
@@ -342,9 +295,22 @@ function oppScore(t){
 
 function oppWide(){oppStats.wides++;updateSummary();}
 
-function kickout(t){if(t==="won")stats.koWon++; else stats.koLost++; updateSummary();}
-function oppKickout(t){if(t==="won")oppStats.koWon++; else oppStats.koLost++; updateSummary();}
+/* kickouts */
+function kickout(t){t==="won"?stats.koWon++:stats.koLost++;updateSummary();}
+function oppKickout(t){t==="won"?oppStats.koWon++:oppStats.koLost++;updateSummary();}
 
+function startTimer(){
+ if(running)return;
+ running=true;
+ timerInt=setInterval(()=>{
+  time++;
+  timer.innerText=half+" – "+("0"+Math.floor(time/60)).slice(-2)+":"+("0"+time%60).slice(-2);
+ },1000);
+}
+function pauseTimer(){running=false;clearInterval(timerInt);}
+function secondHalf(){half="2nd Half";time=0;}
+
+/* display */
 function updateScore(){
  score.innerText=
  (home.value||"Home")+" "+homeScore.g+"-"+(homeScore.p+homeScore.two*2)
@@ -352,17 +318,45 @@ function updateScore(){
  (away.value||"Opp")+" "+awayScore.g+"-"+(awayScore.p+awayScore.two*2);
 }
 
+/* ✅ FULL SUMMARY */
 function updateSummary(){
 
  let totalScores=homeScore.g+homeScore.p+homeScore.two;
  let conversion=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
 
+ let homeTxt="",oppTxt="";
+
+ Object.entries(playerStats).forEach(([n,s])=>{
+  let tot=s.g*3+s.p+s.two*2;
+  homeTxt+=`${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+ });
+
+ Object.entries(oppPlayerStats).forEach(([n,s])=>{
+  let tot=s.g*3+s.p+s.two*2;
+  oppTxt+=`${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+ });
+
+ let koTot=stats.koWon+stats.koLost;
+ let koPerc=koTot?((stats.koWon/koTot)*100).toFixed(1):0;
+
+ let oppTot=oppStats.koWon+oppStats.koLost;
+ let oppPerc=oppTot?((oppStats.koWon/oppTot)*100).toFixed(1):0;
+
  summary.innerHTML=
- "Shots:"+stats.shots+" Scores:"+totalScores+" Wides:"+stats.wides+
- "<br>Conversion:"+conversion+"%";
+ "<b>TOTAL</b><br>"+
+ "Shots:"+stats.shots+" Scores:"+totalScores+" Wides:"+stats.wides+"<br>"+
+ "Conversion:"+conversion+"%<br><br>"+
+
+ "<b>KICKOUTS</b><br>"+
+ "Home: "+stats.koWon+"/"+koTot+" ("+koPerc+"%)<br>"+
+ "Opp: "+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)<br><br>"+
+
+ "<b>HOME SCORERS</b><br>"+(homeTxt||"None")+"<br><br>"+
+ "<b>OPP SCORERS</b><br>"+(oppTxt||"None");
 }
 
 </script>
 
 </body>
 </html>
+``
