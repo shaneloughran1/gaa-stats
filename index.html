@@ -81,13 +81,30 @@
   <h3>Pitch</h3>
   <div id="pitch" onclick="logShot(event)">
 
+    <!-- End line -->
     <div class="line" style="top:0;"></div>
 
+    <!-- Small & big rectangle -->
     <div class="box" style="top:0;left:35%;width:30%;height:12%;"></div>
     <div class="box" style="top:0;left:20%;width:60%;height:20%;"></div>
 
+    <!-- 20m, 45m, 65m, etc -->
     <div class="line" style="top:20%;"></div>
     <div class="line" style="top:40%;"></div>
+
+    <!-- ✅ ARC (THIS IS THE FIX) -->
+    <svg style="position:absolute; top:20%; left:0; width:100%; height:40%;"
+         viewBox="0 0 100 100"
+         preserveAspectRatio="none">
+
+      <!-- Smooth arc -->
+      <path d="M5,0 Q50,90 95,0"
+            stroke="white"
+            stroke-width="2"
+            fill="none"/>
+    </svg>
+
+    <!-- Lower lines -->
     <div class="line" style="top:60%;"></div>
     <div class="line" style="top:80%;"></div>
 
@@ -120,30 +137,26 @@
 
 <script>
 
-// DATA
 let lineup = {};
 let selected = "";
 
-// SCORES
 let homeScore = {g:0, p:0, two:0};
 let awayScore = {g:0, p:0, two:0};
 
-// STATS
 let stats = {shots:0};
 
-// TIMER
 let time = 0;
 let running = false;
 let timerInt;
 let half = "1st Half";
 
-/* SETUP PLAYERS */
+/* PLAYERS */
 for(let i=1;i<=15;i++){
   players.innerHTML +=
     `<input placeholder="#${i}" onchange="lineup[${i}]=this.value"><br>`;
 }
 
-/* START MATCH */
+/* START */
 function startMatch(){
 
   match.style.display="block";
@@ -185,7 +198,7 @@ function secondHalf(){
   time = 0;
 }
 
-/* PLAYER SELECT */
+/* SELECT PLAYER */
 function selectPlayer(n){
   selected = n;
 }
@@ -234,7 +247,6 @@ function updateScore(){
 
 /* SUMMARY */
 function updateSummary(){
-
   summary.innerText = "Shots: " + stats.shots;
 }
 
