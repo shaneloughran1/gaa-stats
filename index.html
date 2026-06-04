@@ -196,7 +196,6 @@ button {padding:8px;margin:3px;}
 
 <script>
 
-/* DATA */
 let lineup={},oppLineup={};
 let selected="",selectedOpp="";
 
@@ -216,89 +215,37 @@ let oppSubMode=false,oppSubOff=null;
 
 let time=0,running=false,timerInt,half="1st Half";
 
-/* subs */
+/* subs inputs */
 for(let i=16;i<=30;i++){
  homeSubs.innerHTML+=`<input placeholder="#${i}">`;
  awaySubs.innerHTML+=`<input placeholder="#${i}">`;
 }
 
-/* start */
+/* start match */
 function startMatch(){
  match.style.display="block";
 
  let p="",o="";
  for(let i=1;i<=30;i++){
-  let dis="";
+  let dis=i>15?"disabled":"";
   p+=`<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
   o+=`<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
+
  playerButtons.innerHTML=p;
  oppButtons.innerHTML=o;
 
- updateScore();updateSummary();
+ updateScore();
+ updateSummary();
 }
 
-/* ✅ SUB FIX */
+/* selection */
+function selectPlayer(n){selected=n;}
+function selectOpp(n){selectedOpp=n;}
+
+/* subs mode (basic baseline version) */
 function startSub(){subMode=true;subOff=null;}
 function startOppSub(){oppSubMode=true;oppSubOff=null;}
-
-function selectPlayer(n){
-
- let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
-
- if(subMode){
-  if(subOff===null){
-    if(btn.disabled)return;
-    subOff=n;
-    return;
-  }
-
-  if(n===subOff)return;
-
-  let offBtn=document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
-  if(!btn.disabled)return;
-
-  offBtn.disabled=true;
-  btn.disabled=false;
-
-  subMode=false;
-  subOff=null;
-  logEvent("Sub "+subOff+" → "+n);
-  return;
- }
-
- if(btn.disabled)return;
- selected=n;
-}
-
-function selectOpp(n){
-
- let btn=document.querySelector(`button[onclick="selectOpp(${n})"]`);
-
- if(oppSubMode){
-  if(oppSubOff===null){
-    if(btn.disabled)return;
-    oppSubOff=n;
-    return;
-  }
-
-  if(n===oppSubOff)return;
-
-  let offBtn=document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`);
-  if(!btn.disabled)return;
-
-  offBtn.disabled=true;
-  btn.disabled=false;
-
-  oppSubMode=false;
-  oppSubOff=null;
-  logEvent("Opp Sub "+oppSubOff+" → "+n);
-  return;
- }
-
- if(btn.disabled)return;
- selectedOpp=n;
-}
 
 /* scoring */
 function addScore(t){
@@ -317,12 +264,18 @@ function addScore(t){
 
  logEvent("#"+selected+" "+t);
 
- updateScore();updateSummary();
+ updateScore();
+ updateSummary();
 }
 
 function addWide(){
  stats.wides++;stats.shots++;
+
+ if(half==="1st Half"){firstHalf.wides++;firstHalf.shots++;}
+ else{secondHalfStats.wides++;secondHalfStats.shots++;}
+
  logEvent("Wide");
+
  updateSummary();
 }
 
@@ -338,18 +291,34 @@ function oppScore(t){
  logEvent("Opp #"+selectedOpp+" "+t);
 
  selectedOpp="";
- updateScore();updateSummary();
+ updateScore();
+ updateSummary();
 }
 
-function oppWide(){oppStats.wides++;logEvent("Opp Wide");updateSummary();}
+function oppWide(){
+ oppStats.wides++;
+ logEvent("Opp Wide");
+ updateSummary();
+}
 
-function kickout(t){t==="won"?stats.koWon++:stats.koLost++;logEvent("KO "+t);updateSummary();}
-function oppKickout(t){t==="won"?oppStats.koWon++:oppStats.koLost++;logEvent("Opp KO "+t);updateSummary();}
+/* kickouts */
+function kickout(t){
+ t==="won"?stats.koWon++:stats.koLost++;
+ logEvent("KO "+t);
+ updateSummary();
+}
+
+function oppKickout(t){
+ t==="won"?oppStats.koWon++:oppStats.koLost++;
+ logEvent("Opp KO "+t);
+ updateSummary();
+}
 
 /* timer */
 function startTimer(){
  if(running)return;
  running=true;
+
  timerInt=setInterval(()=>{
   time++;
   let m=("0"+Math.floor(time/60)).slice(-2);
@@ -357,9 +326,11 @@ function startTimer(){
   timer.innerText=half+" – "+m+":"+s;
  },1000);
 }
+
 function pauseTimer(){running=false;clearInterval(timerInt);}
 function secondHalf(){half="2nd Half";time=0;}
 
+/* timeline */
 function currentTime(){
  return ("0"+Math.floor(time/60)).slice(-2)+":"+("0"+time%60).slice(-2);
 }
@@ -380,48 +351,41 @@ function updateScore(){
 
 function updateSummary(){
 
- let totalScores = homeScore.g + homeScore.p + homeScore.two;
+ let totalScores=homeScore.g+homeScore.p+homeScore.two;
+ let conversion=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
 
- let conversion = stats.shots
-  ? ((totalScores / stats.shots) * 100).toFixed(1)
-  : 0;
+ let koTot=stats.koWon+stats.koLost;
+ let koPerc=koTot?((stats.koWon/koTot)*100).toFixed(1):0;
 
- let koTot = stats.koWon + stats.koLost;
- let koPerc = koTot
-  ? ((stats.koWon / koTot) * 100).toFixed(1)
-  : 0;
+ let oppTot=oppStats.koWon+oppStats.koLost;
+ let oppPerc=oppTot?((oppStats.koWon/oppTot)*100).toFixed(1):0;
 
- let oppTot = oppStats.koWon + oppStats.koLost;
- let oppPerc = oppTot
-  ? ((oppStats.koWon / oppTot) * 100).toFixed(1)
-  : 0;
-
- /* ✅ SCORERS (this is the only addition) */
- let homeTxt = "";
- let oppTxt = "";
+ let homeTxt="",oppTxt="";
 
  Object.entries(playerStats).forEach(([n,s])=>{
-  let tot = s.g*3 + s.p + s.two*2;
-  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+  let tot=s.g*3+s.p+s.two*2;
+  homeTxt+=`${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
  });
 
  Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  let tot = s.g*3 + s.p + s.two*2;
-  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+  let tot=s.g*3+s.p+s.two*2;
+  oppTxt+=`${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
  });
 
- summary.innerHTML =
- 
-Shots:"+stats.shots+" 
-  Scores:"+totalScores+"Shots:"++" (Opp Wides:"+oppStats.wides+")"+
+ summary.innerHTML=
+ "<b>TOTAL</b><br>"+
+ "Shots:"+stats.shots+
+ " Scores:"+totalScores+
+ " Wides:"+stats.wides+
+ " (Opp Wides:"+oppStats.wides+")<br>"+
+ "Conversion:"+conversion+"%<br><br>"+
 
- "<br>Conversion:"+conversion+"%"+
- "<br><br>KO Home:"+stats.koWon+"/"+koTot+" ("+koPerc+"%)"+
- "<br>KO Opp:"+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)"+
- "<br><br><b>HOME SCORERS</b><br>"+
- (homeTxt || "None")+
- "<br><br><b>OPP SCORERS</b><br>"+
- (oppTxt || "None");
+ "<b>KICKOUTS</b><br>"+
+ "Home: "+stats.koWon+"/"+koTot+" ("+koPerc+"%)<br>"+
+ "Opp: "+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)<br><br>"+
+
+ "<b>HOME SCORERS</b><br>"+(homeTxt||"None")+"<br><br>"+
+ "<b>OPP SCORERS</b><br>"+(oppTxt||"None");
 }
 
 </script>
