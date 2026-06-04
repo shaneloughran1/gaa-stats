@@ -5,30 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { font-family: Arial; padding:10px; }
+body {font-family:Arial;padding:10px;}
 
-/* ✅ SIDE BY SIDE PLAYER PANELS */
-.row { display:flex; gap:20px; }
-.column { flex:1; }
+.row {display:flex; gap:30px;}
+.column {flex:1;}
 
-/* ✅ INPUTS NOW HALF WIDTH */
-input {
-  width:45%;
-  margin:2px 0;
-  padding:4px;
-}
+.formation {display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center;}
+.center {grid-column:2;}
 
-button { padding:8px; margin:3px; }
+.midfield {display:flex; justify-content:space-between; padding:0 30px; margin:8px 0;}
 
-.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
-.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.subs input {display:block;margin:3px auto;}
 
-#timeline {
- max-height:200px;
- overflow-y:auto;
- border:1px solid #ccc;
- padding:6px;
-}
+input {width:70px;text-align:center;padding:4px;}
+
+button {padding:8px;margin:3px;}
+
+.grid3 {display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;}
+.grid2 {display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+
+#timeline {max-height:200px;overflow-y:auto;border:1px solid #ccc;padding:6px;}
 </style>
 </head>
 
@@ -42,13 +38,73 @@ button { padding:8px; margin:3px; }
 <div class="row">
 
 <div class="column">
-<h3 id="homeTitle">Home Players</h3>
-<div id="homeInputs"></div>
+<h3 id="homeTitle">Home</h3>
+
+<div class="formation">
+<input class="center" placeholder="#1" onchange="lineup[1]=this.value">
+
+<input placeholder="#2" onchange="lineup[2]=this.value">
+<input placeholder="#3" onchange="lineup[3]=this.value">
+<input placeholder="#4" onchange="lineup[4]=this.value">
+
+<input placeholder="#5" onchange="lineup[5]=this.value">
+<input placeholder="#6" onchange="lineup[6]=this.value">
+<input placeholder="#7" onchange="lineup[7]=this.value">
+</div>
+
+<div class="midfield">
+<input placeholder="#8" onchange="lineup[8]=this.value">
+<input placeholder="#9" onchange="lineup[9]=this.value">
+</div>
+
+<div class="formation">
+<input placeholder="#10" onchange="lineup[10]=this.value">
+<input placeholder="#11" onchange="lineup[11]=this.value">
+<input placeholder="#12" onchange="lineup[12]=this.value">
+
+<input placeholder="#13" onchange="lineup[13]=this.value">
+<input placeholder="#14" onchange="lineup[14]=this.value">
+<input placeholder="#15" onchange="lineup[15]=this.value">
+</div>
+
+<h4>Subs</h4>
+<div class="subs" id="homeSubs"></div>
+
 </div>
 
 <div class="column">
-<h3 id="awayTitle">Opp Players</h3>
-<div id="awayInputs"></div>
+<h3 id="awayTitle">Opp</h3>
+
+<div class="formation">
+<input class="center" placeholder="#1" onchange="oppLineup[1]=this.value">
+
+<input placeholder="#2" onchange="oppLineup[2]=this.value">
+<input placeholder="#3" onchange="oppLineup[3]=this.value">
+<input placeholder="#4" onchange="oppLineup[4]=this.value">
+
+<input placeholder="#5" onchange="oppLineup[5]=this.value">
+<input placeholder="#6" onchange="oppLineup[6]=this.value">
+<input placeholder="#7" onchange="oppLineup[7]=this.value">
+</div>
+
+<div class="midfield">
+<input placeholder="#8" onchange="oppLineup[8]=this.value">
+<input placeholder="#9" onchange="oppLineup[9]=this.value">
+</div>
+
+<div class="formation">
+<input placeholder="#10" onchange="oppLineup[10]=this.value">
+<input placeholder="#11" onchange="oppLineup[11]=this.value">
+<input placeholder="#12" onchange="oppLineup[12]=this.value">
+
+<input placeholder="#13" onchange="oppLineup[13]=this.value">
+<input placeholder="#14" onchange="oppLineup[14]=this.value">
+<input placeholder="#15" onchange="oppLineup[15]=this.value">
+</div>
+
+<h4>Subs</h4>
+<div class="subs" id="awaySubs"></div>
+
 </div>
 
 </div>
@@ -71,7 +127,7 @@ button { padding:8px; margin:3px; }
 <div id="playerButtons"></div>
 <button onclick="startSub()">SUB</button>
 
-<h3>Select Opp Player</h3>
+<h3>Select Opp</h3>
 <div id="oppButtons"></div>
 <button onclick="startOppSub()">OPP SUB</button>
 
@@ -83,7 +139,7 @@ button { padding:8px; margin:3px; }
 <button onclick="addWide()">Wide</button>
 </div>
 
-<h3>Kickouts (Home)</h3>
+<h3>Kickouts</h3>
 <div class="grid2">
 <button onclick="kickout('won')">KO Won</button>
 <button onclick="kickout('lost')">KO Lost</button>
@@ -97,7 +153,7 @@ button { padding:8px; margin:3px; }
 <button onclick="oppWide()">Wide</button>
 </div>
 
-<h3>Kickouts (Opponent)</h3>
+<h3>Opp Kickouts</h3>
 <div class="grid2">
 <button onclick="oppKickout('won')">KO Won</button>
 <button onclick="oppKickout('lost')">KO Lost</button>
@@ -113,10 +169,10 @@ button { padding:8px; margin:3px; }
 
 <script>
 
-let lineup={}, oppLineup={};
-let selected="", selectedOpp="";
+let lineup={},oppLineup={};
+let selected="",selectedOpp="";
 
-let playerStats={}, oppPlayerStats={};
+let playerStats={},oppPlayerStats={};
 
 let homeScore={g:0,p:0,two:0};
 let awayScore={g:0,p:0,two:0};
@@ -124,47 +180,37 @@ let awayScore={g:0,p:0,two:0};
 let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0,koWon:0,koLost:0};
 
-let time=0, running=false, timerInt;
+/* ✅ HALF SPLITS */
+let firstHalf={shots:0,scores:0,wides:0};
+let secondHalfStats={shots:0,scores:0,wides:0};
+
+let time=0,running=false,timerInt;
 let half="1st Half";
-let matchEnded=false;
 
-let subMode=false, subOff=null;
-let oppSubMode=false, oppSubOff=null;
+let subMode=false,subOff=null;
+let oppSubMode=false,oppSubOff=null;
 
-/* ✅ BUILD PLAYER INPUTS */
-for(let i=1;i<=30;i++){
- homeInputs.innerHTML += `<input placeholder="#${i}" onchange="lineup[${i}]=this.value">`;
- awayInputs.innerHTML += `<input placeholder="#${i}" onchange="oppLineup[${i}]=this.value">`;
+for(let i=16;i<=30;i++){
+ homeSubs.innerHTML+=`<input placeholder="#${i}" onchange="lineup[${i}]=this.value">`;
+ awaySubs.innerHTML+=`<input placeholder="#${i}" onchange="oppLineup[${i}]=this.value">`;
 }
 
-/* ✅ HEADERS */
-function updateHeaders(){
- homeTitle.innerText = home.value || "Home Players";
- awayTitle.innerText = away.value || "Opp Players";
-}
-
-/* ✅ START MATCH */
 function startMatch(){
-
  match.style.display="block";
 
- let p="", o="";
+ let p="",o="";
  for(let i=1;i<=30;i++){
   let dis=i>15?"disabled":"";
-  p += `<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
-  o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
+  p+=`<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
+  o+=`<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
-
  playerButtons.innerHTML=p;
  oppButtons.innerHTML=o;
-
- updateScore();
- updateSummary();
 }
 
 /* ✅ TIMER */
 function startTimer(){
- if(running||matchEnded)return;
+ if(running)return;
  running=true;
  timerInt=setInterval(()=>{
   time++;
@@ -174,143 +220,61 @@ function startTimer(){
  },1000);
 }
 
-function pauseTimer(){ running=false; clearInterval(timerInt); }
-function secondHalf(){ half="2nd Half"; time=0; }
-
-/* ✅ SUBS */
-function startSub(){ subMode=true; subOff=null; }
-function startOppSub(){ oppSubMode=true; oppSubOff=null; }
-
-function selectPlayer(n){
-
- let btn=document.querySelector(`button[onclick="selectPlayer(${n})"]`);
-
- if(subMode){
-  if(!subOff){ subOff=n; return; }
-  document.querySelector(`button[onclick="selectPlayer(${subOff})"]`).disabled=true;
-  btn.disabled=false;
-  logEvent(`🔁 #${subOff} OFF → #${n} ON`);
-  subMode=false;
-  return;
- }
-
- if(btn.disabled||matchEnded) return;
-
- selected=n;
-}
-
-function selectOpp(n){
-
- let btn=document.querySelector(`button[onclick="selectOpp(${n})"]`);
-
- if(oppSubMode){
-  if(!oppSubOff){ oppSubOff=n; return; }
-  document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`).disabled=true;
-  btn.disabled=false;
-  logEvent(`🔁 Opp #${oppSubOff} OFF → #${n} ON`);
-  oppSubMode=false;
-  return;
- }
-
- if(btn.disabled||matchEnded) return;
-
- selectedOpp=n;
-}
+function pauseTimer(){running=false;clearInterval(timerInt);}
+function secondHalf(){half="2nd Half";time=0;}
 
 /* ✅ SCORING */
 function addScore(type){
-
- if(matchEnded||!selected)return;
+ if(!selected)return;
 
  if(!playerStats[selected]) playerStats[selected]={g:0,p:0,two:0};
 
- if(type==="Goal"){homeScore.g++; playerStats[selected].g++;}
- if(type==="Point"){homeScore.p++; playerStats[selected].p++;}
- if(type==="2pt"){homeScore.two++; playerStats[selected].two++;}
+ if(type==="Goal"){homeScore.g++;playerStats[selected].g++;}
+ if(type==="Point"){homeScore.p++;playerStats[selected].p++;}
+ if(type==="2pt"){homeScore.two++;playerStats[selected].two++;}
 
  stats.shots++;
 
- logEvent(`✅ ${lineup[selected]||"#"+selected} – ${type}`);
+ if(half==="1st Half"){firstHalf.shots++;firstHalf.scores++;}
+ else{secondHalfStats.shots++;secondHalfStats.scores++;}
 
- updateScore(); updateSummary();
+ updateScore();updateSummary();
 }
 
-function oppScore(type){
+function addWide(){
+ stats.wides++;stats.shots++;
 
- if(matchEnded||!selectedOpp)return;
+ if(half==="1st Half"){firstHalf.wides++;firstHalf.shots++;}
+ else{secondHalfStats.wides++;secondHalfStats.shots++;}
 
- if(!oppPlayerStats[selectedOpp]) oppPlayerStats[selectedOpp]={g:0,p:0,two:0};
-
- if(type==="Goal"){awayScore.g++; oppPlayerStats[selectedOpp].g++;}
- if(type==="Point"){awayScore.p++; oppPlayerStats[selectedOpp].p++;}
- if(type==="2pt"){awayScore.two++; oppPlayerStats[selectedOpp].two++;}
-
- logEvent(`🔴 ${(oppLineup[selectedOpp]||"#"+selectedOpp)} – ${type}`);
-
- selectedOpp="";
- updateScore(); updateSummary();
-}
-
-/* ✅ OTHER EVENTS */
-function addWide(){ stats.wides++; stats.shots++; logEvent("⚪ Wide"); updateSummary(); }
-function oppWide(){ oppStats.wides++; logEvent("🔴 Opp Wide"); updateSummary(); }
-
-function kickout(t){
- if(t==="won"){ stats.koWon++; logEvent("🟢 KO Won"); }
- else{ stats.koLost++; logEvent("🔴 KO Lost"); }
  updateSummary();
 }
 
-function oppKickout(t){
- if(t==="won"){ oppStats.koWon++; logEvent("🔴 Opp KO Won"); }
- else{ oppStats.koLost++; logEvent("🟢 Opp KO Lost"); }
- updateSummary();
-}
-
-/* ✅ SCORE DISPLAY */
 function updateScore(){
- score.innerText =
+ score.innerText=
  (home.value||"Home")+": "+homeScore.g+"-"+(homeScore.p+homeScore.two*2)
  +" | "+
  (away.value||"Opp")+": "+awayScore.g+"-"+(awayScore.p+awayScore.two*2);
 }
 
-/* ✅ SUMMARY */
+/* ✅ FULL SUMMARY WITH SPLITS */
 function updateSummary(){
 
- let homeTxt="", oppTxt="";
+ let totalScores=homeScore.g+homeScore.p+homeScore.two;
 
- Object.entries(playerStats).forEach(([n,s])=>{
-  let total=s.g*3+s.p+s.two*2;
-  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
- });
+ let conversion=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
 
- Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  let total=s.g*3+s.p+s.two*2;
-  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${total})<br>`;
- });
+ summary.innerHTML=
+ "<b>TOTAL</b><br>"+
+ "Shots:"+stats.shots+" Scores:"+totalScores+" Wides:"+stats.wides+"<br>"+
+ "Conversion:"+conversion+"%<br><br>"+
 
- summary.innerHTML =
- "<b>HOME</b><br>"+(homeTxt||"None")+"<br><br>"+
- "<b>OPP</b><br>"+(oppTxt||"None");
-}
+ "<b>1st Half</b><br>"+
+ "Shots:"+firstHalf.shots+" Scores:"+firstHalf.scores+" Wides:"+firstHalf.wides+"<br><br>"+
 
-/* ✅ TIMELINE */
-function logEvent(t){
- let d=document.createElement("div");
- d.innerText=t;
- timeline.prepend(d);
-}
-
-/* ✅ END MATCH */
-function endMatch(){
- if(matchEnded) return;
- matchEnded=true;
- pauseTimer();
- logEvent("🏁 Full Time – "+score.innerText);
+ "<b>2nd Half</b><br>"+
+ "Shots:"+secondHalfStats.shots+" Scores:"+secondHalfStats.scores+" Wides:"+secondHalfStats.wides;
 }
 
 </script>
-
-</body>
-</html>
+``
