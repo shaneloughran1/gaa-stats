@@ -228,7 +228,7 @@ function startMatch(){
 
  let p="",o="";
  for(let i=1;i<=30;i++){
-  let dis=i>15?"disabled":"";
+  let dis="";
   p+=`<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
   o+=`<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
@@ -411,9 +411,10 @@ function updateSummary(){
  });
 
  summary.innerHTML =
- "Shots:"+stats.shots+
- " Scores:"+totalScores+
- " Wides:"+stats.wides+
+ 
+Shots:"+stats.shots+" 
+  Scores:"+totalScores+"Shots:"++" (Opp Wides:"+oppStats.wides+")"+
+
  "<br>Conversion:"+conversion+"%"+
  "<br><br>KO Home:"+stats.koWon+"/"+koTot+" ("+koPerc+"%)"+
  "<br>KO Opp:"+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)"+
