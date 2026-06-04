@@ -380,20 +380,47 @@ function updateScore(){
 
 function updateSummary(){
 
- let totalScores=homeScore.g+homeScore.p+homeScore.two;
- let conversion=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
+ let totalScores = homeScore.g + homeScore.p + homeScore.two;
 
- let koTot=stats.koWon+stats.koLost;
- let koPerc=koTot?((stats.koWon/koTot)*100).toFixed(1):0;
+ let conversion = stats.shots
+  ? ((totalScores / stats.shots) * 100).toFixed(1)
+  : 0;
 
- let oppTot=oppStats.koWon+oppStats.koLost;
- let oppPerc=oppTot?((oppStats.koWon/oppTot)*100).toFixed(1):0;
+ let koTot = stats.koWon + stats.koLost;
+ let koPerc = koTot
+  ? ((stats.koWon / koTot) * 100).toFixed(1)
+  : 0;
 
- summary.innerHTML=
- "Shots:"+stats.shots+" Scores:"+totalScores+" Wides:"+stats.wides+
+ let oppTot = oppStats.koWon + oppStats.koLost;
+ let oppPerc = oppTot
+  ? ((oppStats.koWon / oppTot) * 100).toFixed(1)
+  : 0;
+
+ /* ✅ SCORERS (this is the only addition) */
+ let homeTxt = "";
+ let oppTxt = "";
+
+ Object.entries(playerStats).forEach(([n,s])=>{
+  let tot = s.g*3 + s.p + s.two*2;
+  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+ });
+
+ Object.entries(oppPlayerStats).forEach(([n,s])=>{
+  let tot = s.g*3 + s.p + s.two*2;
+  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}-${s.two} (${tot})<br>`;
+ });
+
+ summary.innerHTML =
+ "Shots:"+stats.shots+
+ " Scores:"+totalScores+
+ " Wides:"+stats.wides+
  "<br>Conversion:"+conversion+"%"+
  "<br><br>KO Home:"+stats.koWon+"/"+koTot+" ("+koPerc+"%)"+
- "<br>KO Opp:"+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)";
+ "<br>KO Opp:"+oppStats.koWon+"/"+oppTot+" ("+oppPerc+"%)"+
+ "<br><br><b>HOME SCORERS</b><br>"+
+ (homeTxt || "None")+
+ "<br><br><b>OPP SCORERS</b><br>"+
+ (oppTxt || "None");
 }
 
 </script>
