@@ -283,6 +283,31 @@ function selectPlayer(n){
     return;
   }
 
+function selectOpp(n){function let btn = document.querySelector(`button[onclick="selectOpp(${n})"]`);
+
+ if(oppSubMode){
+
+  if(oppSubOff === null){
+    oppSubOff = n;
+    return;
+  }
+
+  if(n === oppSubOff) return;
+
+  let offBtn = document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`);
+
+  if(offBtn) offBtn.disabled = true;
+  if(btn) btn.disabled = false;
+
+  oppSubMode = false;
+  oppSubOff = null;
+
+  return;
+ }
+
+ selectedOpp = n;
+}
+
   // don't allow same player
   if(n === subOff) return;
 
