@@ -240,8 +240,68 @@ function startMatch(){
 }
 
 /* selection */
-function selectPlayer(n){selected=n;}
-function selectOpp(n){selectedOpp=n;}
+
+function selectPlayer(n){
+
+ let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+
+ if(subMode){
+
+  // first click = player going OFF
+  if(subOff === null){
+    subOff = n;
+    return;
+  }
+
+  // don't allow same player
+  if(n === subOff) return;
+
+  let offBtn = document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+
+  // swap players
+  offBtn.disabled = true;
+  btn.disabled = false;
+
+  subMode = false;
+  subOff = null;
+
+  return;
+ }
+
+ selected = n;
+}
+
+function selectPlayer(n){
+
+ let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
+
+ if(subMode){
+
+  // first click = player going OFF
+  if(subOff === null){
+    subOff = n;
+    return;
+  }
+
+  // don't allow same player
+  if(n === subOff) return;
+
+  let offBtn = document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
+
+  // swap players
+  offBtn.disabled = true;
+  btn.disabled = false;
+
+  subMode = false;
+  subOff = null;
+
+  return;
+ }
+
+ selected = n;
+}
+
+
 
 /* subs mode (basic baseline version) */
 function startSub(){subMode=true;subOff=null;}
