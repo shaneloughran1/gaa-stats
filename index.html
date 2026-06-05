@@ -251,21 +251,7 @@ function selectOpp(n){
 }
 
 
- let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
-
- if(subMode){
-
-  // first click = player going OFF
-  if(subOff === null){
-    subOff = n;
-    return;
-  }
-
-  // don't allow same player
-  if(n === subOff) return;
-
-  let offBtn = document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
-
+ 
   // swap players
   offBtn.disabled = true;
   btn.disabled = false;
