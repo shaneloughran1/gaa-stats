@@ -241,7 +241,9 @@ function startMatch(){
 
 /* selection */
 
-function selectPlayer(n){
+
+function selectOpp(n){function selectedOpp = n;
+}
 
  let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
 
@@ -271,17 +273,6 @@ function selectPlayer(n){
  selected = n;
 }
 
-function selectPlayer(n){
-
- let btn = document.querySelector(`button[onclick="selectPlayer(${n})"]`);
-
- if(subMode){
-
-  // first click = player going OFF
-  if(subOff === null){
-    subOff = n;
-    return;
-  }
 
 function selectOpp(n){function let btn = document.querySelector(`button[onclick="selectOpp(${n})"]`);
 
