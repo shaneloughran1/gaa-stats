@@ -244,59 +244,9 @@ function startMatch(){
 
 /* selection */
 
-
-
 function selectOpp(n){
  selectedOpp = n;
 }
-
-
- 
- 
-
-
- if(oppSubMode){
-
-  if(oppSubOff === null){
-    oppSubOff = n;
-    return;
-  }
-
-  if(n === oppSubOff) return;
-
-  let offBtn = document.querySelector(`button[onclick="selectOpp(${oppSubOff})"]`);
-
-  if(offBtn) offBtn.disabled = true;
-  if(btn) btn.disabled = false;
-
-  oppSubMode = false;
-  oppSubOff = null;
-
-  return;
- }
-
- selectedOpp = n;
-}
-
-  // don't allow same player
-  if(n === subOff) return;
-
-  let offBtn = document.querySelector(`button[onclick="selectPlayer(${subOff})"]`);
-
-  // swap players
-  offBtn.disabled = true;
-  btn.disabled = false;
-
-  subMode = false;
-  subOff = null;
-
-  return;
- }
-
- selected = n;
-}
-
-
 
 /* subs mode (basic baseline version) */
 function startSub(){subMode=true;subOff=null;}
