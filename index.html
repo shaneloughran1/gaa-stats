@@ -1,75 +1,7 @@
 <!DOCTYPE html>
-<htmlGAA Match Stats</title><html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {
- padding:10px;
- font-family:Arial;
-}
-
-.row {display:flex; gap:30px;}
-.column {flex:1;}
-
-.pitch-rows {
- display:flex;
- flex-direction:column;
- align-items:center;
- gap:12px;
-}
-
-.row1 {display:flex;justify-content:center;width:260px;}
-.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
-.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
-
-.row1 input,.row2 input,.row3 input {
- width:70px;
- text-align:center;
- justify-self:center;
-}
-
-.subs input {
- display:inline-block;
- width:60px;
- margin:3px;
-}
-
-button {padding:6px;margin:3px;}
-
-#timeline {
- max-height:200px;
- overflow-y:auto;
- border:1px solid #ccc;
- padding:5px;
-}
-
-#match {display:none;}
-</style>
-</head>
-
-<body>
-
-<h2>Match Setup</h2>
-
-<!-- ✅ FIXED TEAM INPUTS -->
-<input id="home" placeholder="Home Team"><br><br>
-<input id="away" placeholder="Opponent"><br><br>
-
-<div class="row">
-
-<div class="column">
-<h3>Home</h3>
-
-<div class="pitch-rows">
-
-<div class="row1">
-<input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
-</div>
-
-<div class="row3">
-<input onclick="selectPlayer(2)" onchange="lineup[2]=this.value" placeholder="#2">
-<input onclick="selectPlayer(3)" onchange="lineup[3]=this.value" placeholder="#3">
-<input onclick="selectPlayer(4)" onchange="lineup[4]=this.value" placeholder="#4">
+<html>
+<head>
+up[4]=this.value" placeholder="#4"><title>GAA Match Stats</title>
 </div>
 
 <div class="row3">
@@ -99,11 +31,9 @@ button {padding:6px;margin:3px;}
 
 <h4>Subs</h4>
 <div id="homeSubs" class="subs"></div>
-
 </div>
 
 <div class="column">
-
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
@@ -145,7 +75,6 @@ button {padding:6px;margin:3px;}
 
 <h4>Subs</h4>
 <div id="awaySubs" class="subs"></div>
-
 </div>
 
 </div>
@@ -175,6 +104,9 @@ button {padding:6px;margin:3px;}
 <h3>Summary</h3>
 <div id="summary"></div>
 
+<h3>Scorers</h3>
+<div id="scorers"></div>
+
 <h3>Timeline</h3>
 <div id="timeline"></div>
 
@@ -193,7 +125,7 @@ let awayScore={g:0,p:0};
 let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0};
 
-/* ✅ SUBS */
+/* subs */
 for(let i=16;i<=30;i++){
  homeSubs.innerHTML+=`<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
  awaySubs.innerHTML+=`<input onclick="selectOpp(${i})" onchange="oppLineup[${i}]=this.value" placeholder="#${i}">`;
@@ -204,7 +136,6 @@ function startMatch(){
  updateScore();
 }
 
-/* selection */
 function selectPlayer(n){selected=n;}
 function selectOpp(n){selectedOpp=n;}
 
@@ -259,10 +190,10 @@ function kickout(t){
 function logEvent(txt){
  let d=document.createElement("div");
  d.innerText=txt;
- document.getElementById("timeline").prepend(d);
+ timeline.prepend(d);
 }
 
-/* ✅ FIXED SCORE FUNCTION */
+/* score display */
 function updateScore(){
 
  let homeName=document.getElementById("home").value||"Home";
@@ -271,7 +202,7 @@ function updateScore(){
  let homeTotal=homeScore.g*3+homeScore.p;
  let awayTotal=awayScore.g*3+awayScore.p;
 
- document.getElementById("score").innerText =
+ score.innerText=
  homeName+" "+homeScore.g+"-"+homeScore.p+" ("+homeTotal+")"+
  " | "+
  awayName+" "+awayScore.g+"-"+awayScore.p+" ("+awayTotal+")";
@@ -283,17 +214,116 @@ function updateSummary(){
  let totalScores=homeScore.g+homeScore.p;
  let conv=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
 
- document.getElementById("summary").innerHTML =
+ summary.innerHTML=
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
  " (Opp:"+oppStats.wides+")"+
  "<br>Conversion:"+conv+"%"+
  "<br>KO:"+stats.koWon+"/"+(stats.koWon+stats.koLost);
+
+ updateScorers();
+}
+
+/* ✅ SCORER LEADERBOARD */
+function updateScorers(){
+
+ let homeList=[],oppList=[];
+
+ Object.entries(playerStats).forEach(([n,s])=>{
+  homeList.push({
+   name:lineup[n]||"#"+n,
+   g:s.g,
+   p:s.p,
+   pts:s.g*3+s.p
+  });
+ });
+
+ Object.entries(oppPlayerStats).forEach(([n,s])=>{
+  oppList.push({
+   name:oppLineup[n]||"#"+n,
+   g:s.g,
+   p:s.p,
+   pts:s.g*3+s.p
+  });
+ });
+
+ homeList.sort((a,b)=>b.pts-a.pts);
+ oppList.sort((a,b)=>b.pts-a.pts);
+
+ let html="<b>HOME</b><br>";
+
+ homeList.forEach(p=>{
+  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
+ });
+
+ html+="<br><b>OPP</b><br>";
+
+ oppList.forEach(p=>{
+  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
+ });
+
+ scorers.innerHTML=html;
 }
 
 </script>
 
 </body>
 </html>
-``
-<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {padding:10px;font-family:Arial;}
+
+.row {display:flex;gap:30px;}
+.column {flex:1;}
+
+.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
+
+.row1 {display:flex;justify-content:center;width:260px;}
+.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
+.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
+
+.row1 input,.row2 input,.row3 input {
+ width:70px;text-align:center;justify-self:center;
+}
+
+.subs input {
+ display:inline-block;
+ width:60px;
+ margin:3px;
+}
+
+button {padding:6px;margin:3px;}
+
+#timeline {
+ max-height:200px;
+ overflow-y:auto;
+ border:1px solid #ccc;
+ padding:5px;
+}
+
+#match {display:none;}
+</style>
+</head>
+
+<body>
+
+<h2>Match Setup</h2>
+
+<input id="home" placeholder="Home Team"><br><br>
+<input id="away" placeholder="Opponent"><br><br>
+
+<div class="row">
+
+<div class="column">
+<h3>Home</h3>
+
+<div class="pitch-rows">
+
+<div class="row1">
+<input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
+</div>
+
+<div class="row3">
+<input onclick="selectPlayer(2)" onchange="lineup[2]=this.value" placeholder="#2">
+<input onclick="selectPlayer(3)" onchange="lineup[3]=this.value" placeholder="#3">
