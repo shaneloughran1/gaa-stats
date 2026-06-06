@@ -223,9 +223,24 @@ for(let i=16;i<=30;i++){
 
 /* start match */
 
+
 function startMatch(){
- alert("startMatch is running");
-``
+ match.style.display = "block";
+
+ let p = "", o = "";
+ for(let i=1;i<=30;i++){
+  let dis = i > 15 ? "disabled" : "";
+  p += `<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
+  o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
+ }
+
+ playerButtons.innerHTML = p;
+ oppButtons.innerHTML = o;
+
+ updateScore();
+ updateSummary();
+}
+
 
 
  let p="",o="";
