@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
-<head="viewport" content="width=device-width, initial-scale=1"><head>
+<title>GAA Match Stats</title><html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {font-family:Arial;padding:10px;}
-
 .row {display:flex; gap:30px;}
 .column {flex:1;}
 
@@ -26,9 +25,12 @@ input {
  text-align:center;
 }
 
-/* hidden match area */
-#match {display:none;}
+.subs input{
+ display:block;
+ margin:4px 0;
+}
 
+#match {display:none;}
 </style>
 </head>
 
@@ -81,6 +83,9 @@ input {
 
 </div>
 
+<h4>Subs</h4>
+<div id="homeSubs" class="subs"></div>
+
 </div>
 
 <div class="column">
@@ -122,6 +127,9 @@ input {
 </div>
 
 </div>
+
+<h4>Subs</h4>
+<div id="awaySubs" class="subs"></div>
 
 </div>
 
@@ -169,138 +177,91 @@ let awayScore={g:0,p:0};
 let stats={shots:0,wides:0};
 let oppStats={wides:0};
 
-/* ✅ SUB VARIABLES */
-let subMode = false;
-let subOff = null;
+let subMode=false, subOff=null;
+let oppSubMode=false, oppSubOff=null;
 
-let oppSubMode = false;
-let oppSubOff = null;
-
-function startMatch(){
- document.getElementById("match").style.display = "block";
+/* ✅ CREATE SUB LISTS */
+for(let i=16;i<=30;i++){
+ document.getElementById("homeSubs").innerHTML += `<input onclick="selectPlayer(${i})" placeholder="#${i}">`;
+ document.getElementById("awaySubs").innerHTML += `<input onclick="selectOpp(${i})" placeholder="#${i}">`;
 }
 
-/* ✅ SELECTION WITH SUB SUPPORT */
+function startMatch(){
+ document.getElementById("match").style.display="block";
+}
+
+function startSub(){subMode=true;subOff=null;}
+function startOppSub(){oppSubMode=true;oppSubOff=null;}
+
 function selectPlayer(n){
 
  if(subMode){
-  if(subOff === null){
-    subOff = n;
-    return;
-  }
-
-  if(n === subOff) return;
-
-  subMode = false;
-  subOff = null;
+  if(subOff===null){subOff=n;return;}
+  if(n===subOff)return;
+  subMode=false;
+  subOff=null;
   return;
  }
 
- selected = n;
+ selected=n;
 }
 
 function selectOpp(n){
 
  if(oppSubMode){
-  if(oppSubOff === null){
-    oppSubOff = n;
-    return;
-  }
-
-  if(n === oppSubOff) return;
-
-  oppSubMode = false;
-  oppSubOff = null;
+  if(oppSubOff===null){oppSubOff=n;return;}
+  if(n===oppSubOff)return;
+  oppSubMode=false;
+  oppSubOff=null;
   return;
  }
 
- selectedOpp = n;
+ selectedOpp=n;
 }
 
-/* ✅ SUB START */
-function startSub(){
- subMode = true;
- subOff = null;
-}
-
-function startOppSub(){
- oppSubMode = true;
- oppSubOff = null;
-}
-
-/* SCORING */
+/* scoring */
 function addScore(t){
+ if(!selected)return;
 
- if(!selected) return;
-
- if(!playerStats[selected])
-  playerStats[selected]={g:0,p:0};
+ if(!playerStats[selected])playerStats[selected]={g:0,p:0};
 
  if(t==="Goal"){homeScore.g++;playerStats[selected].g++;}
  if(t==="Point"){homeScore.p++;playerStats[selected].p++;}
 
  stats.shots++;
- updateScore();
- updateSummary();
+ updateScore();updateSummary();
 }
 
-function addWide(){
- stats.wides++;
- stats.shots++;
- updateSummary();
-}
-
+function addWide(){stats.wides++;stats.shots++;updateSummary();}
 function oppScore(t){
+ if(!selectedOpp)return;
 
- if(!selectedOpp) return;
-
- if(!oppPlayerStats[selectedOpp])
-  oppPlayerStats[selectedOpp]={g:0,p:0};
+ if(!oppPlayerStats[selectedOpp])oppPlayerStats[selectedOpp]={g:0,p:0};
 
  if(t==="Goal"){awayScore.g++;oppPlayerStats[selectedOpp].g++;}
  if(t==="Point"){awayScore.p++;oppPlayerStats[selectedOpp].p++;}
 
- updateScore();
- updateSummary();
+ updateScore();updateSummary();
 }
+function oppWide(){oppStats.wides++;updateSummary();}
 
-function oppWide(){
- oppStats.wides++;
- updateSummary();
-}
-
-/* DISPLAY */
 function updateScore(){
- document.getElementById("score").innerText =
+ document.getElementById("score").innerText=
  (home.value||"Home")+" "+homeScore.g+"-"+homeScore.p+
  " | "+
  (away.value||"Opp")+" "+awayScore.g+"-"+awayScore.p;
 }
 
 function updateSummary(){
-
- let homeTxt="";
- let oppTxt="";
-
- Object.entries(playerStats).forEach(([n,s])=>{
-  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
- });
-
- Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
- });
-
- document.getElementById("summary").innerHTML =
+ document.getElementById("summary").innerHTML=
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
- " (Opp:"+oppStats.wides+")<br><br>"+
- "<b>HOME</b><br>"+homeTxt+
- "<br><b>OPP</b><br>"+oppTxt;
+ " (Opp:"+oppStats.wides+")";
 }
 
 </script>
 
 </body>
 </html>
-
-<title>GAA Match Stats</title>
+``
+<head>
