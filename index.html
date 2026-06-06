@@ -1,6 +1,59 @@
 <!DOCTYPE html>
-<html>
-away" placeholder="Opponent"><br><br><head>
+<htmlGAA Match Stats</title><html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+ padding:10px;
+ font-family:Arial;
+}
+
+.row {display:flex; gap:30px;}
+.column {flex:1;}
+
+.pitch-rows {
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:12px;
+}
+
+.row1 {display:flex;justify-content:center;width:260px;}
+.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
+.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
+
+.row1 input,.row2 input,.row3 input {
+ width:70px;
+ text-align:center;
+ justify-self:center;
+}
+
+.subs input {
+ display:inline-block;
+ width:60px;
+ margin:3px;
+}
+
+button {padding:6px;margin:3px;}
+
+#timeline {
+ max-height:200px;
+ overflow-y:auto;
+ border:1px solid #ccc;
+ padding:5px;
+}
+
+#match {display:none;}
+</style>
+</head>
+
+<body>
+
+<h2>Match Setup</h2>
+
+<!-- ✅ FIXED TEAM INPUTS -->
+<input id="home" placeholder="Home Team"><br><br>
+<input id="away" placeholder="Opponent"><br><br>
 
 <div class="row">
 
@@ -46,12 +99,15 @@ away" placeholder="Opponent"><br><br><head>
 
 <h4>Subs</h4>
 <div id="homeSubs" class="subs"></div>
+
 </div>
 
 <div class="column">
+
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
+
 <div class="row1">
 <input onclick="selectOpp(1)" onchange="oppLineup[1]=this.value" placeholder="#1">
 </div>
@@ -84,10 +140,12 @@ away" placeholder="Opponent"><br><br><head>
 <input onclick="selectOpp(14)" onchange="oppLineup[14]=this.value" placeholder="#14">
 <input onclick="selectOpp(15)" onchange="oppLineup[15]=this.value" placeholder="#15">
 </div>
+
 </div>
 
 <h4>Subs</h4>
 <div id="awaySubs" class="subs"></div>
+
 </div>
 
 </div>
@@ -135,20 +193,18 @@ let awayScore={g:0,p:0};
 let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0};
 
-let time=0;
-
-/* subs */
+/* ✅ SUBS */
 for(let i=16;i<=30;i++){
  homeSubs.innerHTML+=`<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
  awaySubs.innerHTML+=`<input onclick="selectOpp(${i})" onchange="oppLineup[${i}]=this.value" placeholder="#${i}">`;
 }
 
-/* start */
 function startMatch(){
  document.getElementById("match").style.display="block";
+ updateScore();
 }
 
-/* select */
+/* selection */
 function selectPlayer(n){selected=n;}
 function selectOpp(n){selectedOpp=n;}
 
@@ -167,7 +223,11 @@ function addScore(t){
  updateScore();updateSummary();
 }
 
-function addWide(){stats.wides++;stats.shots++;logEvent("Wide");updateSummary();}
+function addWide(){
+ stats.wides++;stats.shots++;
+ logEvent("Wide");
+ updateSummary();
+}
 
 function oppScore(t){
  if(!selectedOpp)return;
@@ -182,8 +242,13 @@ function oppScore(t){
  updateScore();updateSummary();
 }
 
-function oppWide(){oppStats.wides++;logEvent("Opp Wide");updateSummary();}
+function oppWide(){
+ oppStats.wides++;
+ logEvent("Opp Wide");
+ updateSummary();
+}
 
+/* kickouts */
 function kickout(t){
  t=="won"?stats.koWon++:stats.koLost++;
  logEvent("KO "+t);
@@ -194,23 +259,31 @@ function kickout(t){
 function logEvent(txt){
  let d=document.createElement("div");
  d.innerText=txt;
- timeline.prepend(d);
+ document.getElementById("timeline").prepend(d);
 }
 
-/* display */
+/* ✅ FIXED SCORE FUNCTION */
 function updateScore(){
- score.innerText=
- (home.value||"Home")+" "+homeScore.g+"-"+homeScore.p+
+
+ let homeName=document.getElementById("home").value||"Home";
+ let awayName=document.getElementById("away").value||"Opp";
+
+ let homeTotal=homeScore.g*3+homeScore.p;
+ let awayTotal=awayScore.g*3+awayScore.p;
+
+ document.getElementById("score").innerText =
+ homeName+" "+homeScore.g+"-"+homeScore.p+" ("+homeTotal+")"+
  " | "+
- (away.value||"Opp")+" "+awayScore.g+"-"+awayScore.p;
+ awayName+" "+awayScore.g+"-"+awayScore.p+" ("+awayTotal+")";
 }
 
+/* summary */
 function updateSummary(){
 
- let tot=homeScore.g+homeScore.p;
- let conv=stats.shots?((tot/stats.shots)*100).toFixed(1):0;
+ let totalScores=homeScore.g+homeScore.p;
+ let conv=stats.shots?((totalScores/stats.shots)*100).toFixed(1):0;
 
- summary.innerHTML=
+ document.getElementById("summary").innerHTML =
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
  " (Opp:"+oppStats.wides+")"+
@@ -222,42 +295,5 @@ function updateSummary(){
 
 </body>
 </html>
-<title>GAA Match Stats</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {padding:10px;font-family:Arial;}
-
-.row {display:flex;gap:30px;}
-.column {flex:1;}
-
-.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
-
-.row1 {display:flex;justify-content:center;width:260px;}
-.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
-.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
-
-.row1 input,.row2 input,.row3 input {
- width:70px;text-align:center;justify-self:center;
-}
-
-.subs input {display:inline-block;width:60px;margin:3px;}
-
-button {padding:6px;margin:3px;}
-
-#timeline {
- max-height:200px;
- overflow-y:auto;
- border:1px solid #ccc;
- padding:5px;
-}
-
-#match {display:none;}
-</style>
-</head>
-
-<body>
-
-<h2>Match Setup</h2>
-
-<input id="home" placeholder="Home Team"><br><br>
+``
+<head>
