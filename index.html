@@ -234,8 +234,9 @@ document.getElementById("match").style.display = "block";
   o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
 
- playerButtons.innerHTML = p;
- oppButtons.innerHTML = o;
+document.getElementById("playerButtons").innerHTML = p;
+document.getElementById("oppButtons").innerHTML = o;
+
 
  updateScore();
  updateSummary();
