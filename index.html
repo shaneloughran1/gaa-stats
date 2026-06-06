@@ -225,28 +225,13 @@ for(let i=16;i<=30;i++){
 
 
 
-function startMatch(){
 
- alert("startMatch running");
+function startMatch(){functionElementById("match").style.display = "block";
 
- document.getElementById("match").style.display = "block";
-
- let p = "", o = "";
- for(let i=1;i<=30;i++){
-  let dis = i > 15 ? "disabled" : "";
-  p += `<button onclick="selectPlayer(${i})" ${dis}>${i}</button>`;
-  o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
- }
-
- document.getElementById("playerButtons").innerHTML = p;
- alert("after player buttons");
-
- document.getElementById("oppButtons").innerHTML = o;
- alert("after opp buttons");
-
- updateScore();
- updateSummary();
+ document.getElementById("playerButtons").innerHTML = "TEST HOME";
+ document.getElementById("oppButtons").innerHTML = "TEST OPP";
 }
+
 
 
 
