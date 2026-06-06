@@ -224,8 +224,12 @@ for(let i=16;i<=30;i++){
 /* start match */
 
 
-function startMatch(){
-document.getElementById("match").style.display = "block";
+
+unction startMatch(){
+
+ alert("startMatch running");
+
+ document.getElementById("match").style.display = "block";
 
  let p = "", o = "";
  for(let i=1;i<=30;i++){
@@ -234,13 +238,16 @@ document.getElementById("match").style.display = "block";
   o += `<button onclick="selectOpp(${i})" ${dis}>${i}</button>`;
  }
 
-document.getElementById("playerButtons").innerHTML = p;
-document.getElementById("oppButtons").innerHTML = o;
+ document.getElementById("playerButtons").innerHTML = p;
+ alert("after player buttons");
 
+ document.getElementById("oppButtons").innerHTML = o;
+ alert("after opp buttons");
 
  updateScore();
  updateSummary();
 }
+
 
 
 
