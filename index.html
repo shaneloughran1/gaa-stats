@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<title>GAA Match Stats</title><html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {font-family:Arial;padding:10px;}
+;padding:10px;}<html>
 .row {display:flex; gap:30px;}
 .column {flex:1;}
 
@@ -180,10 +176,13 @@ let oppStats={wides:0};
 let subMode=false, subOff=null;
 let oppSubMode=false, oppSubOff=null;
 
-/* ✅ CREATE SUB LISTS */
+/* ✅ SUBS WITH NAMING */
 for(let i=16;i<=30;i++){
- document.getElementById("homeSubs").innerHTML += `<input onclick="selectPlayer(${i})" placeholder="#${i}">`;
- document.getElementById("awaySubs").innerHTML += `<input onclick="selectOpp(${i})" placeholder="#${i}">`;
+ document.getElementById("homeSubs").innerHTML +=
+  `<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
+
+ document.getElementById("awaySubs").innerHTML +=
+  `<input onclick="selectOpp(${i})" onchange="oppLineup[${i}]=this.value" placeholder="#${i}">`;
 }
 
 function startMatch(){
@@ -194,7 +193,6 @@ function startSub(){subMode=true;subOff=null;}
 function startOppSub(){oppSubMode=true;oppSubOff=null;}
 
 function selectPlayer(n){
-
  if(subMode){
   if(subOff===null){subOff=n;return;}
   if(n===subOff)return;
@@ -202,12 +200,10 @@ function selectPlayer(n){
   subOff=null;
   return;
  }
-
  selected=n;
 }
 
 function selectOpp(n){
-
  if(oppSubMode){
   if(oppSubOff===null){oppSubOff=n;return;}
   if(n===oppSubOff)return;
@@ -215,14 +211,11 @@ function selectOpp(n){
   oppSubOff=null;
   return;
  }
-
  selectedOpp=n;
 }
 
-/* scoring */
 function addScore(t){
  if(!selected)return;
-
  if(!playerStats[selected])playerStats[selected]={g:0,p:0};
 
  if(t==="Goal"){homeScore.g++;playerStats[selected].g++;}
@@ -233,9 +226,9 @@ function addScore(t){
 }
 
 function addWide(){stats.wides++;stats.shots++;updateSummary();}
+
 function oppScore(t){
  if(!selectedOpp)return;
-
  if(!oppPlayerStats[selectedOpp])oppPlayerStats[selectedOpp]={g:0,p:0};
 
  if(t==="Goal"){awayScore.g++;oppPlayerStats[selectedOpp].g++;}
@@ -243,25 +236,43 @@ function oppScore(t){
 
  updateScore();updateSummary();
 }
+
 function oppWide(){oppStats.wides++;updateSummary();}
 
 function updateScore(){
- document.getElementById("score").innerText=
+ document.getElementById("score").innerText =
  (home.value||"Home")+" "+homeScore.g+"-"+homeScore.p+
  " | "+
  (away.value||"Opp")+" "+awayScore.g+"-"+awayScore.p;
 }
 
 function updateSummary(){
- document.getElementById("summary").innerHTML=
+
+ let homeTxt="";
+ let oppTxt="";
+
+ Object.entries(playerStats).forEach(([n,s])=>{
+  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
+ });
+
+ Object.entries(oppPlayerStats).forEach(([n,s])=>{
+  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
+ });
+
+ document.getElementById("summary").innerHTML =
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
- " (Opp:"+oppStats.wides+")";
+ " (Opp:"+oppStats.wides+")<br><br>"+
+ "<b>HOME</b><br>"+homeTxt+
+ "<br><b>OPP</b><br>"+oppTxt;
 }
 
 </script>
 
 </body>
 </html>
-``
 <head>
+<title>GAA Match Stats</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
