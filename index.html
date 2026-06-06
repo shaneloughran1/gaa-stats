@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-;padding:10px;}<html>
+<html>
+<head>
+10px;}<title>GAA Match Stats</title>
+
 .row {display:flex; gap:30px;}
 .column {flex:1;}
 
@@ -28,6 +31,7 @@ input {
 
 #match {display:none;}
 </style>
+
 </head>
 
 <body>
@@ -176,7 +180,7 @@ let oppStats={wides:0};
 let subMode=false, subOff=null;
 let oppSubMode=false, oppSubOff=null;
 
-/* ✅ SUBS WITH NAMING */
+/* subs with naming */
 for(let i=16;i<=30;i++){
  document.getElementById("homeSubs").innerHTML +=
   `<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
@@ -193,29 +197,16 @@ function startSub(){subMode=true;subOff=null;}
 function startOppSub(){oppSubMode=true;oppSubOff=null;}
 
 function selectPlayer(n){
- if(subMode){
-  if(subOff===null){subOff=n;return;}
-  if(n===subOff)return;
-  subMode=false;
-  subOff=null;
-  return;
- }
  selected=n;
 }
 
 function selectOpp(n){
- if(oppSubMode){
-  if(oppSubOff===null){oppSubOff=n;return;}
-  if(n===oppSubOff)return;
-  oppSubMode=false;
-  oppSubOff=null;
-  return;
- }
  selectedOpp=n;
 }
 
 function addScore(t){
  if(!selected)return;
+
  if(!playerStats[selected])playerStats[selected]={g:0,p:0};
 
  if(t==="Goal"){homeScore.g++;playerStats[selected].g++;}
@@ -229,6 +220,7 @@ function addWide(){stats.wides++;stats.shots++;updateSummary();}
 
 function oppScore(t){
  if(!selectedOpp)return;
+
  if(!oppPlayerStats[selectedOpp])oppPlayerStats[selectedOpp]={g:0,p:0};
 
  if(t==="Goal"){awayScore.g++;oppPlayerStats[selectedOpp].g++;}
@@ -247,32 +239,16 @@ function updateScore(){
 }
 
 function updateSummary(){
-
- let homeTxt="";
- let oppTxt="";
-
- Object.entries(playerStats).forEach(([n,s])=>{
-  homeTxt += `${lineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
- });
-
- Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  oppTxt += `${oppLineup[n]||"#"+n} – ${s.g}-${s.p}<br>`;
- });
-
  document.getElementById("summary").innerHTML =
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
- " (Opp:"+oppStats.wides+")<br><br>"+
- "<b>HOME</b><br>"+homeTxt+
- "<br><b>OPP</b><br>"+oppTxt;
+ " (Opp:"+oppStats.wides+")";
 }
 
 </script>
 
 </body>
 </html>
-<head>
-<title>GAA Match Stats</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
