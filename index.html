@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
-<htmlAA Match Stats</title><html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html>
+<head="viewport" content="width=device-width, initial-scale=1"><head>
 
 <style>
 body {font-family:Arial;padding:10px;}
@@ -16,14 +15,18 @@ body {font-family:Arial;padding:10px;}
  gap:10px;
 }
 
-.row1, .row2, .row3 {display:flex; justify-content:center; gap:10px;}
+.row1, .row2, .row3 {
+ display:flex;
+ justify-content:center;
+ gap:10px;
+}
 
 input {
  width:60px;
  text-align:center;
 }
 
-/* match area hidden initially */
+/* hidden match area */
 #match {display:none;}
 
 </style>
@@ -42,6 +45,7 @@ input {
 <h3>Home</h3>
 
 <div class="pitch-rows">
+
 <div class="row1">
 <input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
 </div>
@@ -74,6 +78,7 @@ input {
 <input onclick="selectPlayer(14)" onchange="lineup[14]=this.value" placeholder="#14">
 <input onclick="selectPlayer(15)" onchange="lineup[15]=this.value" placeholder="#15">
 </div>
+
 </div>
 
 </div>
@@ -82,6 +87,7 @@ input {
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
+
 <div class="row1">
 <input onclick="selectOpp(1)" onchange="oppLineup[1]=this.value" placeholder="#1">
 </div>
@@ -114,6 +120,7 @@ input {
 <input onclick="selectOpp(14)" onchange="oppLineup[14]=this.value" placeholder="#14">
 <input onclick="selectOpp(15)" onchange="oppLineup[15]=this.value" placeholder="#15">
 </div>
+
 </div>
 
 </div>
@@ -127,6 +134,12 @@ input {
 <div id="match">
 
 <h2 id="score">0-0 | 0-0</h2>
+
+<h3>Select Player</h3>
+<button onclick="startSub()">SUB</button>
+
+<h3>Select Opp</h3>
+<button onclick="startOppSub()">OPP SUB</button>
 
 <h3>Home</h3>
 <button onclick="addScore('Goal')">Goal</button>
@@ -156,18 +169,66 @@ let awayScore={g:0,p:0};
 let stats={shots:0,wides:0};
 let oppStats={wides:0};
 
+/* ✅ SUB VARIABLES */
+let subMode = false;
+let subOff = null;
+
+let oppSubMode = false;
+let oppSubOff = null;
+
 function startMatch(){
  document.getElementById("match").style.display = "block";
 }
 
+/* ✅ SELECTION WITH SUB SUPPORT */
 function selectPlayer(n){
+
+ if(subMode){
+  if(subOff === null){
+    subOff = n;
+    return;
+  }
+
+  if(n === subOff) return;
+
+  subMode = false;
+  subOff = null;
+  return;
+ }
+
  selected = n;
 }
 
 function selectOpp(n){
+
+ if(oppSubMode){
+  if(oppSubOff === null){
+    oppSubOff = n;
+    return;
+  }
+
+  if(n === oppSubOff) return;
+
+  oppSubMode = false;
+  oppSubOff = null;
+  return;
+ }
+
  selectedOpp = n;
 }
 
+/* ✅ SUB START */
+function startSub(){
+ subMode = true;
+ subOff = null;
+}
+
+function startOppSub(){
+ oppSubMode = true;
+ oppSubOff = null;
+}
+
+/* SCORING */
 function addScore(t){
 
  if(!selected) return;
@@ -208,6 +269,7 @@ function oppWide(){
  updateSummary();
 }
 
+/* DISPLAY */
 function updateScore(){
  document.getElementById("score").innerText =
  (home.value||"Home")+" "+homeScore.g+"-"+homeScore.p+
@@ -240,4 +302,5 @@ function updateSummary(){
 
 </body>
 </html>
-<head>
+
+<title>GAA Match Stats</title>
