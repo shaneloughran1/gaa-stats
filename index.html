@@ -1,6 +1,48 @@
 <!DOCTYPE html>
 <html>
-<head<div class="row"><head>
+<head>
+<title>GAA Match Stats</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {padding:10px;font-family:Arial;}
+
+.row {display:flex;gap:30px;}
+.column {flex:1;}
+
+.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
+
+.row1 {display:flex;justify-content:center;width:260px;}
+.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
+.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
+
+.row1 input,.row2 input,.row3 input {
+ width:70px;text-align:center;justify-self:center;
+}
+
+.subs input {display:inline-block;width:60px;margin:3px;}
+
+button {padding:6px;margin:3px;}
+
+#timeline {
+ max-height:200px;
+ overflow-y:auto;
+ border:1px solid #ccc;
+ padding:5px;
+}
+
+#match {display:none;}
+</style>
+</head>
+
+<body>
+
+<h2>Match Setup</h2>
+
+<input id="home" placeholder="Home Team"><br><br>
+<input id="away" placeholder="Opponent"><br><br>
+
+<div class="row">
 
 <div class="column">
 <h3>Home</h3>
@@ -258,45 +300,3 @@ function updateScorers(){
 
 </body>
 </html>
-
-<title>GAA Match Stats</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {padding:10px;font-family:Arial;}
-
-.row {display:flex;gap:30px;}
-.column {flex:1;}
-
-.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
-
-.row1 {display:flex;justify-content:center;width:260px;}
-.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
-.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
-
-.row1 input,.row2 input,.row3 input {
- width:70px;text-align:center;justify-self:center;
-}
-
-.subs input {display:inline-block;width:60px;margin:3px;}
-
-button {padding:6px;margin:3px;}
-
-#timeline {
- max-height:200px;
- overflow-y:auto;
- border:1px solid #ccc;
- padding:5px;
-}
-
-#match {display:none;}
-</style>
-</head>
-
-<body>
-
-<h2>Match Setup</h2>
-
-<input id="home" placeholder="Home Team"><br><br>
-<input id="away" placeholder="Opponent"><br><br>
-
