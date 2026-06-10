@@ -1,12 +1,75 @@
 <!DOCTYPE html>
 <html>
-2 input,.row3 input {<head>
- width:70px;text-align:center;justify-self:center;
+<head>
+<title>GAA Match Stats</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+ padding:10px;
+ font-family:Arial;
 }
 
-.subs input {display:inline-block;width:60px;margin:3px;}
+.row {
+ display:flex;
+ gap:30px;
+}
 
-button {padding:6px;margin:3px;}
+.column {
+ flex:1;
+}
+
+.pitch-rows {
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:12px;
+}
+
+.row1 {
+ display:flex;
+ justify-content:center;
+ width:260px;
+}
+
+.row3 {
+ display:grid;
+ grid-template-columns:repeat(3,70px);
+ justify-content:center;
+ gap:10px;
+ width:260px;
+}
+
+.row2 {
+ display:grid;
+ grid-template-columns:repeat(2,70px);
+ justify-content:center;
+ gap:40px;
+ width:180px;
+}
+
+.row1 input,
+.row2 input,
+.row3 input {
+ width:70px;
+ text-align:center;
+}
+
+.subs {
+ display:grid;
+ grid-template-columns:repeat(5,60px);
+ gap:6px;
+}
+
+.subs input {
+ width:60px;
+ text-align:center;
+}
+
+button {
+ padding:6px;
+ margin:3px;
+}
 
 #timeline {
  max-height:200px;
@@ -15,8 +78,11 @@ button {padding:6px;margin:3px;}
  padding:5px;
 }
 
-#match {display:none;}
+#match {
+ display:none;
+}
 </style>
+
 </head>
 
 <body>
@@ -32,6 +98,7 @@ button {padding:6px;margin:3px;}
 <h3>Home</h3>
 
 <div class="pitch-rows">
+
 <div class="row1">
 <input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
 </div>
@@ -64,16 +131,20 @@ button {padding:6px;margin:3px;}
 <input onclick="selectPlayer(14)" onchange="lineup[14]=this.value" placeholder="#14">
 <input onclick="selectPlayer(15)" onchange="lineup[15]=this.value" placeholder="#15">
 </div>
+
 </div>
 
 <h4>Subs</h4>
 <div id="homeSubs" class="subs"></div>
+
 </div>
 
 <div class="column">
+
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
+
 <div class="row1">
 <input onclick="selectOpp(1)" onchange="oppLineup[1]=this.value" placeholder="#1">
 </div>
@@ -106,10 +177,12 @@ button {padding:6px;margin:3px;}
 <input onclick="selectOpp(14)" onchange="oppLineup[14]=this.value" placeholder="#14">
 <input onclick="selectOpp(15)" onchange="oppLineup[15]=this.value" placeholder="#15">
 </div>
+
 </div>
 
 <h4>Subs</h4>
 <div id="awaySubs" class="subs"></div>
+
 </div>
 
 </div>
@@ -165,14 +238,13 @@ let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0};
 let oppKO={won:0,lost:0};
 
-/* ✅ ONLY ADDITION (2pt tracking) */
 let homeTwo=0;
 let awayTwo=0;
 
 /* subs */
 for(let i=16;i<=30;i++){
- homeSubs.innerHTML+=`<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
- awaySubs.innerHTML+=`<input onclick="selectOpp(${i})" onchange="oppLineup[${i}]=this.value" placeholder="#${i}">`;
+ document.getElementById("homeSubs").innerHTML+=`<input onclick="selectPlayer(${i})" onchange="lineup[${i}]=this.value" placeholder="#${i}">`;
+ document.getElementById("awaySubs").innerHTML+=`<input onclick="selectOpp(${i})" onchange="oppLineup[${i}]=this.value" placeholder="#${i}">`;
 }
 
 function startMatch(){
@@ -190,7 +262,7 @@ function addScore(t){
 
  if(t=="Goal"){homeScore.g++;playerStats[selected].g++;}
  if(t=="Point"){homeScore.p++;playerStats[selected].p++;}
- if(t=="Two"){homeScore.p+=2;playerStats[selected].two++; homeTwo++;}
+ if(t=="Two"){homeScore.p+=2;playerStats[selected].two++;homeTwo++;}
 
  stats.shots++;
  logEvent("#"+selected+" "+t);
@@ -205,7 +277,7 @@ function oppScore(t){
 
  if(t=="Goal"){awayScore.g++;oppPlayerStats[selectedOpp].g++;}
  if(t=="Point"){awayScore.p++;oppPlayerStats[selectedOpp].p++;}
- if(t=="Two"){awayScore.p+=2;oppPlayerStats[selectedOpp].two++; awayTwo++;}
+ if(t=="Two"){awayScore.p+=2;oppPlayerStats[selectedOpp].two++;awayTwo++;}
 
  logEvent("Opp #"+selectedOpp+" "+t);
 
@@ -230,7 +302,7 @@ function oppKickout(t){
 function logEvent(txt){
  let d=document.createElement("div");
  d.innerText=txt;
- timeline.prepend(d);
+ document.getElementById("timeline").prepend(d);
 }
 
 function updateScore(){
@@ -240,7 +312,7 @@ function updateScore(){
  let homeTotal=homeScore.g*3 + homeScore.p;
  let awayTotal=awayScore.g*3 + awayScore.p;
 
- score.innerText =
+ document.getElementById("score").innerText =
  homeName+" "+homeScore.g+"-"+homeScore.p+" ("+homeTotal+") | "+
  awayName+" "+awayScore.g+"-"+awayScore.p+" ("+awayTotal+")";
 }
@@ -256,14 +328,13 @@ function updateSummary(){
  let koPct = koTotal ? Math.round((stats.koWon/koTotal)*100) : 0;
  let oppKoPct = oppKoTotal ? Math.round((oppKO.won/oppKoTotal)*100) : 0;
 
- summary.innerHTML =
+ document.getElementById("summary").innerHTML =
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
  " (Opp:"+oppStats.wides+")"+
  "<br>Conversion:"+conv+"%"+
  "<br>KO:"+stats.koWon+"/"+koTotal+" ("+koPct+"%)"+
  "<br>Opp KO:"+oppKO.won+"/"+oppKoTotal+" ("+oppKoPct+"%)"+
- /* ✅ ONLY ADDITION */
  "<br>2pt:"+homeTwo+" (Opp:"+awayTwo+")";
 
  updateScorers();
@@ -296,26 +367,10 @@ function updateScorers(){
   html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
  });
 
- scorers.innerHTML=html;
+ document.getElementById("scorers").innerHTML=html;
 }
 
 </script>
 
 </body>
 </html>
-``
-<title>GAA Match Stats</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {padding:10px;font-family:Arial;}
-
-.row {display:flex;gap:30px;}
-.column {flex:1;}
-
-.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
-
-.row1 {display:flex;justify-content:center;width:260px;}
-.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
-.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
-
