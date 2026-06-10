@@ -48,7 +48,6 @@ button {padding:6px;margin:3px;}
 <h3>Home</h3>
 
 <div class="pitch-rows">
-
 <div class="row1">
 <input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
 </div>
@@ -81,19 +80,16 @@ button {padding:6px;margin:3px;}
 <input onclick="selectPlayer(14)" onchange="lineup[14]=this.value" placeholder="#14">
 <input onclick="selectPlayer(15)" onchange="lineup[15]=this.value" placeholder="#15">
 </div>
-
 </div>
 
 <h4>Subs</h4>
 <div id="homeSubs" class="subs"></div>
-
 </div>
 
 <div class="column">
 <h3>Opposition</h3>
 
 <div class="pitch-rows">
-
 <div class="row1">
 <input onclick="selectOpp(1)" onchange="oppLineup[1]=this.value" placeholder="#1">
 </div>
@@ -126,12 +122,10 @@ button {padding:6px;margin:3px;}
 <input onclick="selectOpp(14)" onchange="oppLineup[14]=this.value" placeholder="#14">
 <input onclick="selectOpp(15)" onchange="oppLineup[15]=this.value" placeholder="#15">
 </div>
-
 </div>
 
 <h4>Subs</h4>
 <div id="awaySubs" class="subs"></div>
-
 </div>
 
 </div>
@@ -157,8 +151,6 @@ button {padding:6px;margin:3px;}
 <h3>Kickouts</h3>
 <button onclick="kickout('won')">Won</button>
 <button onclick="kickout('lost')">Lost</button>
-
-<!-- ✅ ONLY ADDITION -->
 <button onclick="oppKickout('won')">Opp Won</button>
 <button onclick="oppKickout('lost')">Opp Lost</button>
 
@@ -185,8 +177,6 @@ let awayScore={g:0,p:0};
 
 let stats={shots:0,wides:0,koWon:0,koLost:0};
 let oppStats={wides:0};
-
-/* ✅ ONLY ADDITION */
 let oppKO={won:0,lost:0};
 
 /* subs */
@@ -203,7 +193,6 @@ function startMatch(){
 function selectPlayer(n){selected=n;}
 function selectOpp(n){selectedOpp=n;}
 
-/* scoring */
 function addScore(t){
  if(!selected)return;
 
@@ -235,14 +224,12 @@ function oppScore(t){
 
 function oppWide(){oppStats.wides++;logEvent("Opp Wide");updateSummary();}
 
-/* kickouts */
 function kickout(t){
  t=="won"?stats.koWon++:stats.koLost++;
  logEvent("KO "+t);
  updateSummary();
 }
 
-/* ✅ NEW FUNCTION */
 function oppKickout(t){
  t=="won"?oppKO.won++:oppKO.lost++;
  logEvent("Opp KO "+t);
@@ -268,21 +255,29 @@ function updateScore(){
 }
 
 function updateSummary(){
+
  let total=homeScore.g+homeScore.p;
  let conv=stats.shots?((total/stats.shots)*100).toFixed(1):0;
 
- summary.innerHTML=
+ let koTotal = stats.koWon + stats.koLost;
+ let oppKoTotal = oppKO.won + oppKO.lost;
+
+ let koPct = koTotal ? Math.round((stats.koWon/koTotal)*100) : 0;
+ let oppKoPct = oppKoTotal ? Math.round((oppKO.won/oppKoTotal)*100) : 0;
+
+ summary.innerHTML =
  "Shots:"+stats.shots+
  " Wides:"+stats.wides+
  " (Opp:"+oppStats.wides+")"+
  "<br>Conversion:"+conv+"%"+
- "<br>KO:"+stats.koWon+"/"+(stats.koWon+stats.koLost)+
- "<br>Opp KO:"+oppKO.won+"/"+(oppKO.won+oppKO.lost);
+ "<br>KO:"+stats.koWon+"/"+koTotal+" ("+koPct+"%)"+
+ "<br>Opp KO:"+oppKO.won+"/"+oppKoTotal+" ("+oppKoPct+"%)";
 
  updateScorers();
 }
 
 function updateScorers(){
+
  let h=[],a=[];
 
  Object.entries(playerStats).forEach(([n,s])=>{
@@ -315,4 +310,3 @@ function updateScorers(){
 
 </body>
 </html>
-``
