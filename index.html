@@ -351,7 +351,7 @@ function updateScorers(){
     g:s.g,
     p:s.p,
     two:s.two || 0,
-    pts:s.g*3+s.p
+    pts:s.g*3 + s.p + (s.two*2)
   });
  });
 
@@ -361,7 +361,7 @@ function updateScorers(){
     g:s.g,
     p:s.p,
     two:s.two || 0,
-    pts:s.g*3+s.p
+   pts:s.g*3 + s.p + (s.two*2)
   });
  });
 
