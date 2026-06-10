@@ -340,16 +340,29 @@ function updateSummary(){
  updateScorers();
 }
 
+/* ✅ ONLY CHANGE BELOW */
 function updateScorers(){
 
  let h=[],a=[];
 
  Object.entries(playerStats).forEach(([n,s])=>{
-  h.push({name:lineup[n]||"#"+n,g:s.g,p:s.p,pts:s.g*3+s.p});
+  h.push({
+    name:lineup[n]||"#"+n,
+    g:s.g,
+    p:s.p,
+    two:s.two || 0,
+    pts:s.g*3+s.p
+  });
  });
 
  Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  a.push({name:oppLineup[n]||"#"+n,g:s.g,p:s.p,pts:s.g*3+s.p});
+  a.push({
+    name:oppLineup[n]||"#"+n,
+    g:s.g,
+    p:s.p,
+    two:s.two || 0,
+    pts:s.g*3+s.p
+  });
  });
 
  h.sort((x,y)=>y.pts-x.pts);
@@ -358,13 +371,13 @@ function updateScorers(){
  let html="<b>HOME</b><br>";
 
  h.forEach(p=>{
-  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
+  html+=`${p.name} – ${p.g}-${p.p} [2pt:${p.two}] (${p.pts})<br>`;
  });
 
  html+="<br><b>OPP</b><br>";
 
  a.forEach(p=>{
-  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
+  html+=`${p.name} – ${p.g}-${p.p} [2pt:${p.two}] (${p.pts})<br>`;
  });
 
  document.getElementById("scorers").innerHTML=html;
