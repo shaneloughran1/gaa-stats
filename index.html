@@ -276,8 +276,20 @@ function updateSummary(){
  " Wides:"+stats.wides+
  " (Opp:"+oppStats.wides+")"+
  "<br>Conversion:"+conv+"%"+
- "<br>KO:"+stats.koWon+"/"+(stats.koWon+stats.koLost)+
- "<br>Opp KO:"+oppKO.won+"/"+(oppKO.won+oppKO.lost);
+ 
+let koTotal = stats.koWon + stats.koLost;
+let oppKOTotal = oppKO.won + oppKO.lost;
+
+let koPct = koTotal ? Math.round((stats.koWon / koTotal) * 100) : 0;
+let oppKoPct = oppKOTotal ? Math.round((oppKO.won / oppKOTotal) * 100) : 0;
+
+summary.innerHTML=
+ "Shots:"+stats.shots+
+ " Wides:"+stats.wides+
+ " (Opp:"+oppStats.wides+")"+
+ "<br>Conversion:"+conv+"%"+
+ "<br>KO:"+stats.koWon+"/"+koTotal+" ("+koPct+"%)"+
+ "<br>Opp KO:"+oppKO.won+"/"+oppKOTotal+" ("+oppKoPct+"%)";
 
  updateScorers();
 }
