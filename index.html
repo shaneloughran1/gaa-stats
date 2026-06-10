@@ -114,137 +114,6 @@ button {padding:6px;margin:3px;}
 <div class="row3">
 <input onclick="selectOpp(10)" onchange="oppLineup[10]=this.value" placeholder="#10">
 <input onclick="selectOpp(11)" onchange="oppLineup[11]=this.value" placeholder="#11">
-<input onclick="selectOpp(12)" onchange="oppLineup[12]=this.value" placeholder="#12💯 perfect — I’ll do exactly what you asked:
-
-✅ Start from your **current full working version**  
-✅ ✅ Add **2-point scoring only**  
-✅ ❌ No other changes  
-✅ ❌ No restructuring  
-✅ ✅ Safe + complete  
-
----
-
-# 🚀 ✅ FULL `index.html` (ONLY 2-POINTERS ADDED)
-
-👉 Copy everything below
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>GAA Match Stats</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body {padding:10px;font-family:Arial;}
-
-.row {display:flex;gap:30px;}
-.column {flex:1;}
-
-.pitch-rows {display:flex;flex-direction:column;align-items:center;gap:12px;}
-
-.row1 {display:flex;justify-content:center;width:260px;}
-.row3 {display:grid;grid-template-columns:1fr 1fr 1fr;width:260px;}
-.row2 {display:grid;grid-template-columns:1fr 1fr;width:180px;gap:30px;}
-
-.row1 input,.row2 input,.row3 input {
- width:70px;text-align:center;justify-self:center;
-}
-
-.subs input {display:inline-block;width:60px;margin:3px;}
-
-button {padding:6px;margin:3px;}
-
-#timeline {
- max-height:200px;
- overflow-y:auto;
- border:1px solid #ccc;
- padding:5px;
-}
-
-#match {display:none;}
-</style>
-</head>
-
-<body>
-
-<h2>Match Setup</h2>
-
-<input id="home" placeholder="Home Team"><br><br>
-<input id="away" placeholder="Opponent"><br><br>
-
-<div class="row">
-
-<div class="column">
-<h3>Home</h3>
-
-<div class="pitch-rows">
-<div class="row1">
-<input onclick="selectPlayer(1)" onchange="lineup[1]=this.value" placeholder="#1">
-</div>
-
-<div class="row3">
-<input onclick="selectPlayer(2)" onchange="lineup[2]=this.value" placeholder="#2">
-<input onclick="selectPlayer(3)" onchange="lineup[3]=this.value" placeholder="#3">
-<input onclick="selectPlayer(4)" onchange="lineup[4]=this.value" placeholder="#4">
-</div>
-
-<div class="row3">
-<input onclick="selectPlayer(5)" onchange="lineup[5]=this.value" placeholder="#5">
-<input onclick="selectPlayer(6)" onchange="lineup[6]=this.value" placeholder="#6">
-<input onclick="selectPlayer(7)" onchange="lineup[7]=this.value" placeholder="#7">
-</div>
-
-<div class="row2">
-<input onclick="selectPlayer(8)" onchange="lineup[8]=this.value" placeholder="#8">
-<input onclick="selectPlayer(9)" onchange="lineup[9]=this.value" placeholder="#9">
-</div>
-
-<div class="row3">
-<input onclick="selectPlayer(10)" onchange="lineup[10]=this.value" placeholder="#10">
-<input onclick="selectPlayer(11)" onchange="lineup[11]=this.value" placeholder="#11">
-<input onclick="selectPlayer(12)" onchange="lineup[12]=this.value" placeholder="#12">
-</div>
-
-<div class="row3">
-<input onclick="selectPlayer(13)" onchange="lineup[13]=this.value" placeholder="#13">
-<input onclick="selectPlayer(14)" onchange="lineup[14]=this.value" placeholder="#14">
-<input onclick="selectPlayer(15)" onchange="lineup[15]=this.value" placeholder="#15">
-</div>
-</div>
-
-<h4>Subs</h4>
-<div id="homeSubs" class="subs"></div>
-</div>
-
-<div class="column">
-<h3>Opposition</h3>
-
-<div class="pitch-rows">
-<div class="row1">
-<input onclick="selectOpp(1)" onchange="oppLineup[1]=this.value" placeholder="#1">
-</div>
-
-<div class="row3">
-<input onclick="selectOpp(2)" onchange="oppLineup[2]=this.value" placeholder="#2">
-<input onclick="selectOpp(3)" onchange="oppLineup[3]=this.value" placeholder="#3">
-<input onclick="selectOpp(4)" onchange="oppLineup[4]=this.value" placeholder="#4">
-</div>
-
-<div class="row3">
-<input onclick="selectOpp(5)" onchange="oppLineup[5]=this.value" placeholder="#5">
-<input onclick="selectOpp(6)" onchange="oppLineup[6]=this.value" placeholder="#6">
-<input onclick="selectOpp(7)" onchange="oppLineup[7]=this.value" placeholder="#7">
-</div>
-
-<div class="row2">
-<input onclick="selectOpp(8)" onchange="oppLineup[8]=this.value" placeholder="#8">
-<input onclick="selectOpp(9)" onchange="oppLineup[9]=this.value" placeholder="#9">
-</div>
-
-<div class="row3">
-<input onclick="selectOpp(10)" onchange="oppLineup[10]=this.value" placeholder="#10">
-<input onclick="selectOpp(11)" onchange="oppLineup[11]=this.value" placeholder="#11">
 <input onclick="selectOpp(12)" onchange="oppLineup[12]=this.value" placeholder="#12">
 </div>
 
@@ -341,8 +210,6 @@ function addScore(t){
  updateScore();updateSummary();
 }
 
-function addWide(){stats.wides++;stats.shots++;logEvent("Wide");updateSummary();}
-
 function oppScore(t){
  if(!selectedOpp)return;
 
@@ -357,6 +224,7 @@ function oppScore(t){
  updateScore();updateSummary();
 }
 
+function addWide(){stats.wides++;stats.shots++;logEvent("Wide");updateSummary();}
 function oppWide(){oppStats.wides++;logEvent("Opp Wide");updateSummary();}
 
 function kickout(t){
@@ -416,13 +284,11 @@ function updateScorers(){
  let h=[],a=[];
 
  Object.entries(playerStats).forEach(([n,s])=>{
-  let pts = s.g*3 + s.p;
-  h.push({name:lineup[n]||"#"+n,g:s.g,p:s.p,two:s.two||0,pts:pts});
+  h.push({name:lineup[n]||"#"+n,g:s.g,p:s.p,pts:s.g*3+s.p});
  });
 
  Object.entries(oppPlayerStats).forEach(([n,s])=>{
-  let pts = s.g*3 + s.p;
-  a.push({name:oppLineup[n]||"#"+n,g:s.g,p:s.p,two:s.two||0,pts:pts});
+  a.push({name:oppLineup[n]||"#"+n,g:s.g,p:s.p,pts:s.g*3+s.p});
  });
 
  h.sort((x,y)=>y.pts-x.pts);
@@ -431,13 +297,13 @@ function updateScorers(){
  let html="<b>HOME</b><br>";
 
  h.forEach(p=>{
-  html+=`${p.name} – ${p.g}-${p.p} [2s:${p.two}] (${p.pts})<br>`;
+  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
  });
 
  html+="<br><b>OPP</b><br>";
 
  a.forEach(p=>{
-  html+=`${p.name} – ${p.g}-${p.p} [2s:${p.two}] (${p.pts})<br>`;
+  html+=`${p.name} – ${p.g}-${p.p} (${p.pts})<br>`;
  });
 
  scorers.innerHTML=html;
